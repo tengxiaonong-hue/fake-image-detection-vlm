@@ -102,10 +102,6 @@ Approximate end-to-end job runtime for the completed 500-image experiments:
 
 Detailed runtime and GPU information is available in:
 
-```text
-github_results/model_runtime_gpu.csv
-
-
 ## Result Visualisations
 
 ### Accuracy Comparison
@@ -119,4 +115,3 @@ github_results/model_runtime_gpu.csv
 ### Inference Latency
 
 ![Latency Comparison](figures/latency_comparison.png)
-
