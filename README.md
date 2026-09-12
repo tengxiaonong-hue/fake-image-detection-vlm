@@ -60,13 +60,33 @@ The model first produces an authenticity prediction and then explains the visual
 
 ## Evaluation Metrics
 
-Detection performance is evaluated using:
+Detection performance is evaluated using the following metrics:
 
-- Accuracy
-- Precision
-- Recall
-- F1-score
-- Mean inference latency
+- **Accuracy** — measures the overall proportion of correctly classified images.  
+  It provides a straightforward view of total detection performance on the balanced 500-image evaluation set.
+
+- **Precision** — measures how often images predicted as AI-generated are actually fake.  
+  This is important for understanding the model's false-positive behaviour.
+
+- **Recall** — measures how many AI-generated images are successfully detected.  
+  A higher recall means the model misses fewer fake images.
+
+- **F1-score** — provides a harmonic balance between Precision and Recall.  
+  It is particularly useful when a model shows uneven behaviour between false positives and false negatives.
+
+- **Matthews Correlation Coefficient (MCC)** — evaluates the quality of binary classification using all four confusion-matrix components: TP, TN, FP, and FN.  
+  MCC is useful for detecting degenerate behaviour, such as a model predicting nearly all samples as a single class.
+
+- **Confusion Matrix** — reports True Positives, True Negatives, False Positives, and False Negatives.  
+  This allows detailed inspection of prediction bias and error patterns that may not be visible from Accuracy alone.
+
+- **Mean Inference Latency** — measures the average inference time required for each model-strategy combination.  
+  This is used to compare computational efficiency in addition to predictive performance.
+
+- **Total Runtime** — records the end-to-end GPU job execution time.  
+  It provides a practical measure of the computational cost required to complete the full 500-image experiment.
+
+Together, these metrics evaluate not only **how accurately each model detects AI-generated images**, but also **how balanced, reliable, and computationally efficient each model-strategy combination is**.
 
 ## Experimental Hardware
 
