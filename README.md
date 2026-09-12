@@ -90,7 +90,7 @@ Together, these metrics evaluate not only **how accurately each model detects AI
 
 ## Experimental Hardware
 
-Experiments were conducted on the UTS Cetus High Performance Computing cluster.
+Experiments were conducted on the UTS HPC(Cetus High Performance Computing cluster).
 
 GPU:
 
