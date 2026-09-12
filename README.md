@@ -79,7 +79,7 @@ GPU:
 
 ## Main Results
 
-```text
+
 ===== FINAL RESULTS =====
 
              Model        Strategy   N  Accuracy  Precision  Recall     F1    MCC   TN  FP  FN  TP
