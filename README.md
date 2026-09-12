@@ -79,8 +79,6 @@ GPU:
 
 ## Main Results
 
-## Final Results
-
 ```text
 ===== FINAL RESULTS =====
 
