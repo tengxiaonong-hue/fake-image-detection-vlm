@@ -105,3 +105,18 @@ Detailed runtime and GPU information is available in:
 ```text
 github_results/model_runtime_gpu.csv
 
+
+## Result Visualisations
+
+### Accuracy Comparison
+
+![Accuracy Comparison](figures/accuracy_comparison.png)
+
+### F1 Score Comparison
+
+![F1 Comparison](figures/f1_comparison.png)
+
+### Inference Latency
+
+![Latency Comparison](figures/latency_comparison.png)
+
