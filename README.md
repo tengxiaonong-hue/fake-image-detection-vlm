@@ -79,30 +79,27 @@ GPU:
 
 ## Main Results
 
+| Model | Strategy | N | Accuracy | Precision | Recall | F1 | MCC | TN | FP | FN | TP |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Qwen2.5-VL-3B | Baseline | 500 | **86.80%** | 85.11% | **89.20%** | **87.11%** | **0.7368** | 211 | 39 | 27 | 223 |
+| Qwen2.5-VL-3B | EtC | 500 | 75.60% | 96.38% | 53.20% | 68.56% | 0.5727 | 245 | 5 | 117 | 133 |
+| Qwen2.5-VL-3B | CtE | 500 | 61.00% | 58.62% | 74.80% | 65.73% | 0.2289 | 118 | 132 | 63 | 187 |
+| Qwen2.5-VL-7B | CtE | 500 | 66.20% | 67.38% | 62.80% | 65.01% | 0.3248 | 174 | 76 | 93 | 157 |
+| Qwen2.5-VL-7B | EtC | 500 | 68.20% | 97.89% | 37.20% | 53.91% | 0.4639 | 248 | 2 | 157 | 93 |
+| Qwen2.5-VL-7B | Baseline | 500 | 68.00% | 97.87% | 36.80% | 53.49% | 0.4607 | 248 | 2 | 158 | 92 |
+| LLaVA-OneVision-7B | EtC | 500 | 80.20% | 98.71% | 61.20% | 75.56% | 0.6530 | 248 | 2 | 97 | 153 |
+| LLaVA-OneVision-7B | Baseline | 500 | 69.80% | 99.01% | 40.00% | 56.98% | 0.4932 | 249 | 1 | 150 | 100 |
+| LLaVA-OneVision-7B | CtE | 497 | 63.18% | 98.48% | 26.32% | 41.53% | 0.3818 | 249 | 1 | 182 | 65 |
+| Idefics3-8B | CtE | 495 | 72.32% | 83.83% | 56.00% | 67.15% | 0.4756 | 218 | 27 | 110 | 140 |
+| Idefics3-8B | Baseline | 500 | 71.80% | 96.58% | 45.20% | 61.58% | 0.5149 | 246 | 4 | 137 | 113 |
+| Idefics3-8B | EtC | 500 | 70.20% | 96.33% | 42.00% | 58.50% | 0.4892 | 246 | 4 | 145 | 105 |
+| BLIP2-OPT-2.7B | EtC | 500 | 50.00% | 50.00% | 100.00% | 66.67% | 0.0000 | 0 | 250 | 0 | 250 |
+| BLIP2-OPT-2.7B | Baseline | 500 | 50.00% | 0.00% | 0.00% | 0.00% | 0.0000 | 250 | 0 | 250 | 0 |
+| BLIP2-OPT-2.7B | CtE | 500 | 50.00% | 0.00% | 0.00% | 0.00% | 0.0000 | 250 | 0 | 250 | 0 |
 
-===== FINAL RESULTS =====
+The complete numerical results are available in:
 
-             Model        Strategy   N  Accuracy  Precision  Recall     F1    MCC   TN  FP  FN  TP
-       BLIP2-OPT-2.7B        baseline 500   0.5000     0.0000  0.0000 0.0000 0.0000  250   0 250   0
-       BLIP2-OPT-2.7B cause_to_effect 500   0.5000     0.0000  0.0000 0.0000 0.0000  250   0 250   0
-       BLIP2-OPT-2.7B effect_to_cause 500   0.5000     0.5000  1.0000 0.6667 0.0000    0 250   0 250
-
-            Idefics3-8B        baseline 500   0.7180     0.9658  0.4520 0.6158 0.5149  246   4 137 113
-            Idefics3-8B cause_to_effect 495   0.7232     0.8383  0.5600 0.6715 0.4756  218  27 110 140
-            Idefics3-8B effect_to_cause 500   0.7020     0.9633  0.4200 0.5850 0.4892  246   4 145 105
-
-     LLaVA-OneVision-7B        baseline 500   0.6980     0.9901  0.4000 0.5698 0.4932  249   1 150 100
-     LLaVA-OneVision-7B cause_to_effect 497   0.6318     0.9848  0.2632 0.4153 0.3818  249   1 182  65
-     LLaVA-OneVision-7B effect_to_cause 500   0.8020     0.9871  0.6120 0.7556 0.6530  248   2  97 153
-
-          Qwen2.5-VL-3B        baseline 500   0.8680     0.8511  0.8920 0.8711 0.7368  211  39  27 223
-          Qwen2.5-VL-3B cause_to_effect 500   0.6100     0.5862  0.7480 0.6573 0.2289  118 132  63 187
-          Qwen2.5-VL-3B effect_to_cause 500   0.7560     0.9638  0.5320 0.6856 0.5727  245   5 117 133
-
-          Qwen2.5-VL-7B        baseline 500   0.6800     0.9787  0.3680 0.5349 0.4607  248   2 158  92
-          Qwen2.5-VL-7B cause_to_effect 500   0.6620     0.6738  0.6280 0.6501 0.3248  174  76  93 157
-          Qwen2.5-VL-7B effect_to_cause 500   0.6820     0.9789  0.3720 0.5391 0.4639  248   2 157  93
-
+`github_results/final_5models_with_mcc_confusion.csv`
 The complete numerical results, including MCC and confusion-matrix counts, are available in:
 
 `github_results/final_5models_with_mcc_confusion.csv`
