@@ -1,15 +1,33 @@
-# Explainable Fake Image Detection with Large Multimodal Models
+# Explainable Fake Image Detection with Multimodal Models Below 14B Parameters
 
-This repository contains experiments for explainable AI-generated image detection using large multimodal vision-language models on the FakeBench dataset.
+This repository investigates explainable AI-generated image detection using multimodal large language models with fewer than 14 billion parameters.
 
-The project compares five multimodal models under three prompting strategies:
+The project compares multiple compact and medium-scale vision-language models under three reasoning strategies:
 
 - Baseline
 - Cause-to-Effect (CtE)
 - Effect-to-Cause (EtC)
 
-The goal is to evaluate both fake-image detection performance and the effect of reasoning strategy on model behaviour.
+The focus is not only on detection accuracy, but also on whether reasoning strategy can compensate for limited model scale while maintaining practical computational cost.
+## Model Scope and Design Choice
 
+This project intentionally focuses on multimodal large language models with fewer than 14 billion parameters.
+
+The purpose of this constraint is to evaluate models that are not only capable, but also practical to reproduce, deploy, and compare under realistic academic computing conditions. Very large multimodal models may achieve stronger performance, but they often require substantially more GPU memory, longer inference time, and higher computational cost.
+
+By limiting the model scale to below 14B parameters, this project aims to:
+
+- maintain a fair and reproducible experimental setting;
+- reduce GPU memory and runtime requirements;
+- enable evaluation across multiple models rather than relying on a single very large model;
+- better reflect realistic deployment scenarios for research teams with limited computing resources;
+- study whether reasoning strategies such as Cause-to-Effect (CtE) and Effect-to-Cause (EtC) can improve performance without simply increasing model size.
+
+This design also allows the project to examine an important question:
+
+> Can smaller and medium-scale multimodal models achieve competitive fake-image detection performance through better reasoning and prompting strategies, rather than relying purely on model scale?
+
+The selected models therefore mainly fall within the 2.7B–8B range, while the broader project scope is restricted to models below 14B parameters.
 ## Models
 
 The following models were evaluated:
