@@ -1,0 +1,13 @@
+hf_cache/
+venv/
+work/
+data/
+*.zip
+*.o*
+__pycache__/
+*.pyc
+results_backup/
+results_cleaned/
+results/*backup*
+results/*before*
+results/*cudaerror*
