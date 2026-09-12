@@ -79,24 +79,11 @@ GPU:
 
 ## Main Results
 
-| Model | Strategy | Accuracy | Precision | Recall | F1 |
-|---|---|---:|---:|---:|---:|
-| Qwen2.5-VL-3B | Baseline | **86.80%** | 85.11% | 89.20% | **87.11%** |
-| Qwen2.5-VL-3B | CtE | 61.00% | 58.62% | 74.80% | 65.73% |
-| Qwen2.5-VL-3B | EtC | 75.60% | 96.38% | 53.20% | 68.56% |
-| Qwen2.5-VL-7B | Baseline | 68.00% | 97.87% | 36.80% | 53.49% |
-| Qwen2.5-VL-7B | CtE | 66.20% | 67.38% | 62.80% | 65.01% |
-| Qwen2.5-VL-7B | EtC | 68.20% | 97.89% | 37.20% | 53.91% |
-| Idefics3-8B | Baseline | 71.80% | 96.58% | 45.20% | 61.58% |
-| Idefics3-8B | CtE | **72.32%** | 83.83% | 56.00% | **67.15%** |
-| Idefics3-8B | EtC | 70.20% | 96.33% | 42.00% | 58.50% |
-| LLaVA-OneVision-7B | Baseline | 69.80% | 99.01% | 40.00% | 56.98% |
-| LLaVA-OneVision-7B | CtE | 63.18% | 98.48% | 26.32% | 41.53% |
-| LLaVA-OneVision-7B | EtC | **80.20%** | 98.71% | 61.20% | **75.56%** |
-| BLIP2-OPT-2.7B | Baseline | 50.00% | 0.00% | 0.00% | 0.00% |
-| BLIP2-OPT-2.7B | CtE | 50.00% | 0.00% | 0.00% | 0.00% |
-| BLIP2-OPT-2.7B | EtC | 50.00% | 50.00% | 100.00% | 66.67% |
+![Main Experimental Results](figures/main_results_table.png)
 
+The complete numerical results, including MCC and confusion-matrix counts, are available in:
+
+`github_results/final_5models_with_mcc_confusion.csv`
 ## Key Observations
 
 - Qwen2.5-VL-3B achieved the strongest overall baseline result, with 86.8% accuracy and 87.1% F1.
@@ -133,3 +120,39 @@ Detailed runtime and GPU information is available in:
 ### Inference Latency
 
 ![Latency Comparison](figures/latency_comparison.png)
+
+
+## Confusion Matrices
+
+Confusion matrices are shown for all five models under the three prompting strategies: **Baseline**, **Cause-to-Effect (CtE)**, and **Effect-to-Cause (EtC)**.
+
+### Qwen2.5-VL-3B
+
+| Baseline | CtE | EtC |
+| --- | --- | --- |
+| ![](github_results/confusion_matrices/qwen25_vl_3b_baseline_cm.png) | ![](github_results/confusion_matrices/qwen25_vl_3b_cause_to_effect_cm.png) | ![](github_results/confusion_matrices/qwen25_vl_3b_effect_to_cause_cm.png) |
+
+### Qwen2.5-VL-7B
+
+| Baseline | CtE | EtC |
+| --- | --- | --- |
+| ![](github_results/confusion_matrices/qwen25_vl_7b_baseline_cm.png) | ![](github_results/confusion_matrices/qwen25_vl_7b_cause_to_effect_cm.png) | ![](github_results/confusion_matrices/qwen25_vl_7b_effect_to_cause_cm.png) |
+
+### Idefics3-8B
+
+| Baseline | CtE | EtC |
+| --- | --- | --- |
+| ![](github_results/confusion_matrices/idefics3_8b_baseline_cm.png) | ![](github_results/confusion_matrices/idefics3_8b_cause_to_effect_cm.png) | ![](github_results/confusion_matrices/idefics3_8b_effect_to_cause_cm.png) |
+
+### LLaVA-OneVision-7B
+
+| Baseline | CtE | EtC |
+| --- | --- | --- |
+| ![](github_results/confusion_matrices/llava_onevision_7b_baseline_cm.png) | ![](github_results/confusion_matrices/llava_onevision_7b_cause_to_effect_cm.png) | ![](github_results/confusion_matrices/llava_onevision_7b_effect_to_cause_cm.png) |
+
+### BLIP2-OPT-2.7B
+
+| Baseline | CtE | EtC |
+| --- | --- | --- |
+| ![](github_results/confusion_matrices/blip2_opt_27b_baseline_cm.png) | ![](github_results/confusion_matrices/blip2_opt_27b_cause_to_effect_cm.png) | ![](github_results/confusion_matrices/blip2_opt_27b_effect_to_cause_cm.png) |
+
