@@ -136,7 +136,7 @@ After the multi-model benchmark, Qwen2.5-VL-3B was selected for parameter-effici
 - LoRA alpha: 32
 - LoRA dropout: 0.05
 - Precision: BF16
-- Hardware: NVIDIA RTX PRO 6000 Blackwell 96GB
+- Hardware:UTS HPC NVIDIA RTX PRO 6000 Blackwell 96GB
 
 The fixed 500-image test set was excluded from both training and validation.
 
