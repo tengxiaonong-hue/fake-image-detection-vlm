@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" role="img" aria-labelledby="title desc">
+  <title id="title">Qwen2.5-VL-3B LoRA Training Curve</title>
+  <desc id="desc">Train loss and validation loss across three epochs. Validation loss is lowest at epoch 2.</desc>
+  <rect width="900" height="520" fill="white"/>
+  <text x="450" y="36" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#111827">Qwen2.5-VL-3B LoRA Training Curve</text>
+  <text x="450" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#6b7280">Loss shown on a logarithmic scale</text>
+
+  <line x1="90" y1="440" x2="860" y2="440" stroke="#374151" stroke-width="1.5"/>
+  <line x1="90" y1="70" x2="90" y2="440" stroke="#374151" stroke-width="1.5"/>
+
+  <g font-family="Arial, sans-serif" font-size="12" fill="#6b7280">
+    <line x1="90" y1="95" x2="860" y2="95" stroke="#e5e7eb"/><text x="78" y="99" text-anchor="end">0.02</text>
+    <line x1="90" y1="202" x2="860" y2="202" stroke="#e5e7eb"/><text x="78" y="206" text-anchor="end">0.005</text>
+    <line x1="90" y1="255" x2="860" y2="255" stroke="#e5e7eb"/><text x="78" y="259" text-anchor="end">0.0025</text>
+    <line x1="90" y1="326" x2="860" y2="326" stroke="#e5e7eb"/><text x="78" y="330" text-anchor="end">0.001</text>
+    <line x1="90" y1="418" x2="860" y2="418" stroke="#e5e7eb"/><text x="78" y="422" text-anchor="end">0.0003</text>
+  </g>
+
+  <g font-family="Arial, sans-serif" font-size="13" fill="#374151">
+    <text x="90" y="462" text-anchor="middle">1</text>
+    <text x="475" y="462" text-anchor="middle">2</text>
+    <text x="860" y="462" text-anchor="middle">3</text>
+    <text x="475" y="495" text-anchor="middle" font-size="14">Epoch</text>
+    <text x="24" y="255" text-anchor="middle" font-size="14" transform="rotate(-90 24 255)">Loss</text>
+  </g>
+
+  <line x1="475" y1="70" x2="475" y2="440" stroke="#9ca3af" stroke-dasharray="6 6"/>
+  <rect x="500" y="75" width="128" height="26" rx="6" fill="#f3f4f6"/>
+  <text x="564" y="93" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#374151">Best checkpoint: Epoch 2</text>
+
+  <polyline points="90,96 475,303 860,418" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="90,255 475,266 860,263" fill="none" stroke="#f97316" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <g fill="#2563eb" stroke="white" stroke-width="2">
+    <circle cx="90" cy="96" r="6"/><circle cx="475" cy="303" r="6"/><circle cx="860" cy="418" r="6"/>
+  </g>
+  <g fill="#f97316" stroke="white" stroke-width="2">
+    <circle cx="90" cy="255" r="6"/><circle cx="475" cy="266" r="6"/><circle cx="860" cy="263" r="6"/>
+  </g>
+
+  <g font-family="Arial, sans-serif" font-size="12">
+    <rect x="650" y="112" width="18" height="4" fill="#2563eb"/><text x="677" y="118" fill="#374151">Train Loss</text>
+    <rect x="650" y="138" width="18" height="4" fill="#f97316"/><text x="677" y="144" fill="#374151">Validation Loss</text>
+  </g>
+
+  <g font-family="Arial, sans-serif" font-size="11" fill="#374151">
+    <text x="90" y="83" text-anchor="middle">0.02117</text>
+    <text x="475" y="290" text-anchor="middle">0.001283</text>
+    <text x="860" y="405" text-anchor="middle">0.000268</text>
+    <text x="90" y="243" text-anchor="middle">0.002447</text>
+    <text x="475" y="254" text-anchor="middle">0.002103</text>
+    <text x="860" y="251" text-anchor="middle">0.002190</text>
+  </g>
+</svg>
