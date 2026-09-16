@@ -8,7 +8,6 @@ The project compares multiple compact and medium-scale vision-language models un
 - Cause-to-Effect (CtE)
 - Effect-to-Cause (EtC)
 
-The project also includes parameter-efficient fine-tuning of Qwen2.5-VL-3B using LoRA after the multi-model benchmark.
 
 The focus is not only on detection accuracy, but also on whether reasoning strategy and lightweight fine-tuning can improve performance while maintaining practical computational cost.
 
