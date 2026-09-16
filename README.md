@@ -8,7 +8,10 @@ The project compares multiple compact and medium-scale vision-language models un
 - Cause-to-Effect (CtE)
 - Effect-to-Cause (EtC)
 
-The focus is not only on detection accuracy, but also on whether reasoning strategy can compensate for limited model scale while maintaining practical computational cost.
+The project also includes parameter-efficient fine-tuning of Qwen2.5-VL-3B using LoRA after the multi-model benchmark.
+
+The focus is not only on detection accuracy, but also on whether reasoning strategy and lightweight fine-tuning can improve performance while maintaining practical computational cost.
+
 ## Model Scope and Design Choice
 
 This project intentionally focuses on multimodal large language models with fewer than 14 billion parameters.
@@ -25,9 +28,10 @@ By limiting the model scale to below 14B parameters, this project aims to:
 
 This design also allows the project to examine an important question:
 
-> Can smaller and medium-scale multimodal models achieve competitive fake-image detection performance through better reasoning and prompting strategies, rather than relying purely on model scale?
+> Can smaller and medium-scale multimodal models achieve competitive fake-image detection performance through better reasoning, prompting, and parameter-efficient fine-tuning rather than relying purely on model scale?
 
 The selected models therefore mainly fall within the 2.7B–8B range, while the broader project scope is restricted to models below 14B parameters.
+
 ## Models
 
 The following models were evaluated:
@@ -40,10 +44,16 @@ The following models were evaluated:
 
 ## Dataset
 
-A fixed balanced subset of 500 images from FakeBench was used:
+A fixed balanced subset of 500 images from FakeBench was used for evaluation:
 
 - 250 real images
 - 250 AI-generated images
+
+For LoRA fine-tuning, the fixed 500-image evaluation split was excluded from training and validation. The remaining data were split into:
+
+- 4,500 training images
+- 1,000 validation images
+- 500 held-out test images
 
 The original dataset is not included in this repository.
 
@@ -62,35 +72,20 @@ The model first produces an authenticity prediction and then explains the visual
 
 Detection performance is evaluated using the following metrics:
 
-- **Accuracy** — measures the overall proportion of correctly classified images.  
-  It provides a straightforward view of total detection performance on the balanced 500-image evaluation set.
+- **Accuracy** — measures the overall proportion of correctly classified images.
+- **Precision** — measures how often images predicted as AI-generated are actually fake.
+- **Recall** — measures how many AI-generated images are successfully detected.
+- **F1-score** — provides a harmonic balance between Precision and Recall.
+- **Matthews Correlation Coefficient (MCC)** — evaluates binary classification using all four confusion-matrix components and helps expose degenerate single-class behaviour.
+- **Confusion Matrix** — reports True Positives, True Negatives, False Positives, and False Negatives.
+- **Mean Inference Latency** — measures average inference time per image.
+- **Total Runtime** — records end-to-end GPU job execution time.
 
-- **Precision** — measures how often images predicted as AI-generated are actually fake.  
-  This is important for understanding the model's false-positive behaviour.
-
-- **Recall** — measures how many AI-generated images are successfully detected.  
-  A higher recall means the model misses fewer fake images.
-
-- **F1-score** — provides a harmonic balance between Precision and Recall.  
-  It is particularly useful when a model shows uneven behaviour between false positives and false negatives.
-
-- **Matthews Correlation Coefficient (MCC)** — evaluates the quality of binary classification using all four confusion-matrix components: TP, TN, FP, and FN.  
-  MCC is useful for detecting degenerate behaviour, such as a model predicting nearly all samples as a single class.
-
-- **Confusion Matrix** — reports True Positives, True Negatives, False Positives, and False Negatives.  
-  This allows detailed inspection of prediction bias and error patterns that may not be visible from Accuracy alone.
-
-- **Mean Inference Latency** — measures the average inference time required for each model-strategy combination.  
-  This is used to compare computational efficiency in addition to predictive performance.
-
-- **Total Runtime** — records the end-to-end GPU job execution time.  
-  It provides a practical measure of the computational cost required to complete the full 500-image experiment.
-
-Together, these metrics evaluate not only **how accurately each model detects AI-generated images**, but also **how balanced, reliable, and computationally efficient each model-strategy combination is**.
+Together, these metrics evaluate not only how accurately each model detects AI-generated images, but also how balanced, reliable, and computationally efficient each model-strategy combination is.
 
 ## Experimental Hardware
 
-Experiments were conducted on the UTS HPC(High Performance Computing cluster).
+Experiments were conducted on the UTS HPC (High Performance Computing cluster).
 
 GPU:
 
@@ -117,24 +112,92 @@ GPU:
 | BLIP2-OPT-2.7B | Baseline | 500 | 50.00% | 0.00% | 0.00% | 0.00% | 0.0000 | 250 | 0 | 250 | 0 |
 | BLIP2-OPT-2.7B | CtE | 500 | 50.00% | 0.00% | 0.00% | 0.00% | 0.0000 | 250 | 0 | 250 | 0 |
 
-The complete numerical results are available in:
-
-`github_results/final_5models_with_mcc_confusion.csv`
 The complete numerical results, including MCC and confusion-matrix counts, are available in:
 
 `github_results/final_5models_with_mcc_confusion.csv`
+
+## Qwen2.5-VL-3B LoRA Fine-tuning
+
+After the multi-model benchmark, Qwen2.5-VL-3B was selected for parameter-efficient fine-tuning using LoRA.
+
+### Fine-tuning Setup
+
+- Base model: Qwen2.5-VL-3B-Instruct
+- Training method: LoRA
+- Training samples: 4,500
+- Validation samples: 1,000
+- Held-out test samples: 500
+- Epochs: 3
+- Best checkpoint: Epoch 2
+- Batch size: 2
+- Gradient accumulation steps: 8
+- Effective batch size: 16
+- Learning rate: 1e-4
+- LoRA rank: 16
+- LoRA alpha: 32
+- LoRA dropout: 0.05
+- Precision: BF16
+- Hardware: NVIDIA RTX PRO 6000 Blackwell 96GB
+
+The fixed 500-image test set was excluded from both training and validation.
+
+### Training Results
+
+| Epoch | Train Loss | Validation Loss | Time (min) |
+|---|---:|---:|---:|
+| 1 | 0.02117 | 0.002447 | 25.20 |
+| 2 | 0.001283 | **0.002103** | 36.68 |
+| 3 | 0.000268 | 0.002190 | 36.47 |
+
+Epoch 2 achieved the lowest validation loss and was selected as the `best_adapter` checkpoint.
+
+Training history is available in:
+
+`github_results/qwen3b_lora_training_history.csv`
+
+### Base vs LoRA Evaluation
+
+For a controlled before/after comparison, the original Qwen2.5-VL-3B model and the LoRA-adapted model were evaluated with the **same classification-only prompt** on the same held-out 500-image test set.
+
+| Model | N | Accuracy | Precision | Recall | F1 | MCC | TN | FP | FN | TP |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Qwen2.5-VL-3B Base | 500 | 77.40% | 96.60% | 56.80% | 71.54% | 0.6014 | 245 | 5 | 108 | 142 |
+| **Qwen2.5-VL-3B + LoRA** | **500** | **99.40%** | **99.60%** | **99.20%** | **99.40%** | **0.9880** | **249** | **1** | **2** | **248** |
+
+Under this controlled prompt setting, LoRA fine-tuning improved Accuracy by **22.0 percentage points**, Recall by **42.4 percentage points**, and F1 by approximately **27.86 percentage points**. False negatives decreased from **108 to 2**.
+
+The evaluation summary is available in:
+
+`github_results/qwen3b_base_vs_lora_summary.csv`
+
+> **Important:** The 86.8% Qwen2.5-VL-3B baseline result in the multi-model benchmark used the original benchmark prompt format, which also requested an explanation. The 77.4% Base result above uses the classification-only prompt used for the controlled LoRA comparison. These two baseline values should therefore not be treated as directly interchangeable.
+
+> **Generalization note:** The 99.4% result is an in-domain result on a held-out FakeBench test split. Cross-dataset and unseen-generator generalization are separate experiments and are not yet claimed here.
+
+### Fine-tuning Code
+
+- `src/train_qwen3b_lora.py` — LoRA training and train/validation split construction
+- `src/eval_qwen3b_lora.py` — controlled Base vs LoRA evaluation
+- `scripts/run_qwen3b_lora.sh` — PBS GPU training job
+- `scripts/run_qwen3b_lora_eval.sh` — PBS GPU evaluation job
+
+The LoRA adapter weights themselves are not stored in this GitHub repository. They can be published separately through a model hosting platform such as Hugging Face Hub.
+
 ## Key Observations
 
-- Qwen2.5-VL-3B achieved the strongest overall baseline result, with 86.8% accuracy and 87.1% F1.
+- Qwen2.5-VL-3B achieved the strongest overall benchmark baseline result, with 86.8% accuracy and 87.1% F1 under the original benchmark prompt.
+- In the controlled classification-only evaluation, LoRA fine-tuning substantially improved Qwen2.5-VL-3B in-domain performance, reaching 99.4% accuracy and 0.9880 MCC.
+- The LoRA model reduced false negatives from 108 to 2 under the controlled prompt setting.
 - LLaVA-OneVision-7B benefited substantially from the EtC strategy, improving from 69.8% baseline accuracy to 80.2%.
-- Idefics3-8B performed best under the CtE strategy.
+- Idefics3-8B performed best under the CtE strategy by accuracy and F1 for that model.
 - Qwen2.5-VL-7B showed improved fake-image recall under CtE, although overall accuracy did not increase.
 - BLIP2-OPT-2.7B showed degenerate prediction behaviour and was substantially weaker than the instruction-tuned multimodal models.
 - Larger parameter count did not consistently lead to better fake-image detection performance.
+- Cross-dataset generalization remains an important next step before making claims about robustness beyond FakeBench.
 
 ## Runtime
 
-Approximate end-to-end job runtime for the completed 500-image experiments:
+Approximate end-to-end job runtime for the completed 500-image benchmark experiments:
 
 | Model | Runtime |
 |---|---:|
@@ -144,7 +207,7 @@ Approximate end-to-end job runtime for the completed 500-image experiments:
 | BLIP2-OPT-2.7B | 5m |
 | Qwen2.5-VL-3B | Recorded in final runtime CSV |
 
-Detailed runtime and GPU information is available in:
+LoRA fine-tuning took approximately **98 minutes** across three epochs on a single NVIDIA RTX PRO 6000 Blackwell 96GB GPU.
 
 ## Result Visualisations
 
@@ -159,7 +222,6 @@ Detailed runtime and GPU information is available in:
 ### Inference Latency
 
 ![Latency Comparison](figures/latency_comparison.png)
-
 
 ## Confusion Matrices
 
@@ -194,4 +256,3 @@ Confusion matrices are shown for all five models under the three prompting strat
 | Baseline | CtE | EtC |
 | --- | --- | --- |
 | ![](github_results/confusion_matrices/blip2_opt_27b_baseline_cm.png) | ![](github_results/confusion_matrices/blip2_opt_27b_cause_to_effect_cm.png) | ![](github_results/confusion_matrices/blip2_opt_27b_effect_to_cause_cm.png) |
-
