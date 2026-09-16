@@ -149,7 +149,15 @@ The fixed 500-image test set was excluded from both training and validation.
 | 2 | 0.001283 | **0.002103** | 36.68 |
 | 3 | 0.000268 | 0.002190 | 36.47 |
 
-Epoch 2 achieved the lowest validation loss and was selected as the `best_adapter` checkpoint.
+### LoRA Training Curve
+
+![Qwen2.5-VL-3B LoRA Training Curve](figures/qwen3b_lora_loss_curve.svg)
+
+The curve uses a logarithmic loss scale so that both the rapidly decreasing training loss and the much smaller validation loss remain visible on the same figure. Validation loss reached its minimum at **Epoch 2**, which was selected as the `best_adapter` checkpoint.
+
+### Training Result Analysis
+
+Training converged rapidly. Train loss decreased from **0.02117** at Epoch 1 to **0.000268** at Epoch 3, a reduction of approximately **98.7%**. Validation loss improved from **0.002447** to its minimum of **0.002103** at Epoch 2, then increased slightly to **0.002190** at Epoch 3 (about **4.2%** above the Epoch 2 minimum). This divergence between continuously decreasing train loss and slightly increasing validation loss is consistent with the beginning of mild overfitting. Therefore, Epoch 2 was retained as the best checkpoint rather than using the final epoch by default.
 
 Training history is available in:
 
@@ -164,7 +172,11 @@ For a controlled before/after comparison, the original Qwen2.5-VL-3B model and t
 | Qwen2.5-VL-3B Base | 500 | 77.40% | 96.60% | 56.80% | 71.54% | 0.6014 | 245 | 5 | 108 | 142 |
 | **Qwen2.5-VL-3B + LoRA** | **500** | **99.40%** | **99.60%** | **99.20%** | **99.40%** | **0.9880** | **249** | **1** | **2** | **248** |
 
-Under this controlled prompt setting, LoRA fine-tuning improved Accuracy by **22.0 percentage points**, Recall by **42.4 percentage points**, and F1 by approximately **27.86 percentage points**. False negatives decreased from **108 to 2**.
+### Fine-tuning Impact
+
+Under the controlled classification-only setting, LoRA fine-tuning improved **Accuracy by 22.0 percentage points**, **Recall by 42.4 percentage points**, and **F1 by approximately 27.86 percentage points**. MCC increased from **0.6014 to 0.9880**, while false negatives decreased from **108 to 2**. The largest practical improvement was therefore in fake-image recall: the base model missed many AI-generated images, whereas the adapted model detected nearly all of them on the held-out FakeBench split.
+
+These results show a strong in-domain benefit from parameter-efficient adaptation. However, the near-perfect held-out performance should not be interpreted as evidence of broad robustness until the model is evaluated on external datasets and unseen image generators.
 
 The evaluation summary is available in:
 
