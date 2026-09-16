@@ -9,3 +9,4 @@ tqdm
 Pillow
 sentencepiece
 qwen-vl-utils
+peft
