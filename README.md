@@ -1,4 +1,6 @@
-# Explainable AI-Generated Image Detection with Vision-Language Models
+# Explainable Fake Image Detection using Large Multimodal Models
+
+Benchmarking Reasoning Strategies and LoRA Fine-tuning for AI-Generated Image Detection
 
 This repository investigates explainable AI-generated image detection using compact and medium-scale vision-language models. The study combines multi-model benchmarking, reasoning-strategy evaluation, and parameter-efficient LoRA fine-tuning of Qwen2.5-VL-3B.
 
