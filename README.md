@@ -1,6 +1,6 @@
-# Explainable Fake Image Detection with Multimodal Models Below 14B Parameters
+# Explainable AI-Generated Image Detection with Vision-Language Models: Reasoning Strategies and Parameter-Efficient Fine-tuning
 
-This repository investigates explainable AI-generated image detection using multimodal large language models with fewer than 14 billion parameters.
+This repository investigates explainable AI-generated image detection using compact and medium-scale vision-language models. The study combines multi-model benchmarking, reasoning-strategy evaluation, and parameter-efficient LoRA fine-tuning of Qwen2.5-VL-3B.
 
 The project compares multiple compact and medium-scale vision-language models under three reasoning strategies:
 
