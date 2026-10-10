@@ -123,9 +123,13 @@ The fixed 500-image test set was excluded from both training and validation.
 
 ![Qwen2.5-VL-3B LoRA Training Curve](figures/qwen3b_lora_loss_curve.svg)
 
-Across the extended five-epoch run, validation loss fluctuated early but reached its minimum at **Epoch 5**, which was selected as the `best_adapter` checkpoint. The result indicates continued in-domain convergence through Epoch 5, although the extremely low validation loss motivates additional checks for dataset bias, near-duplicate leakage, and cross-dataset generalisation.
+The extended five-epoch experiment showed continued in-domain convergence, with the lowest validation loss achieved at **Epoch 5**. This checkpoint was therefore selected as the `best_adapter`.
 
-Training history is available in `github_results/qwen3b_lora_training_history.csv`.
+The very low validation loss suggests strong task adaptation on FakeBench. However, because both training and validation performance are close to saturation, further evaluation is required to rule out dataset bias, near-duplicate leakage, or excessive domain specialisation.
+
+Training history is available in:
+
+`github_results/qwen3b_lora_training_history.csv`
 
 ### Base vs LoRA Evaluation
 
