@@ -15,7 +15,7 @@ HOME=Path.home()
 ROOT=HOME/"fakebench"
 RESULTS=ROOT/"results"
 SPLITS=ROOT/"data_splits"
-OUT=ROOT/"models"/"qwen25vl_3b_fakebench_lora"
+OUT=ROOT/"models"/"qwen25vl_3b_fakebench_lora_5epoch"
 META=RESULTS/"metadata.csv"
 TEST=RESULTS/"evaluation_sample_500.csv"
 MODEL_ID="Qwen/Qwen2.5-VL-3B-Instruct"
@@ -25,7 +25,7 @@ Return only one label:
 REAL
 AI-GENERATED"""
 
-EPOCHS=3
+EPOCHS=5
 BATCH_SIZE=2
 GRAD_ACCUM=8
 LR=1e-4
