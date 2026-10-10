@@ -95,8 +95,8 @@ After the benchmark, Qwen2.5-VL-3B was selected for parameter-efficient fine-tun
 - Training samples: 4,500
 - Validation samples: 1,000
 - Held-out test samples: 500
-- Epochs: 3
-- Best checkpoint: Epoch 2
+- Epochs: 5
+- Best checkpoint: Epoch 5
 - Batch size: 2
 - Gradient accumulation steps: 8
 - Effective batch size: 16
@@ -113,15 +113,17 @@ The fixed 500-image test set was excluded from both training and validation.
 
 | Epoch | Train Loss | Validation Loss | Time (min) |
 |---|---:|---:|---:|
-| 1 | 0.02117 | 0.002447 | 25.20 |
-| 2 | 0.001283 | **0.002103** | 36.68 |
-| 3 | 0.000268 | 0.002190 | 36.47 |
+| 1 | 0.02117 | 0.002321 | 25.09 |
+| 2 | 0.002520 | 0.004123 | 35.70 |
+| 3 | 0.000159 | 0.000196 | 27.84 |
+| 4 | 0.000331 | 0.000248 | 22.70 |
+| 5 | **0.0000237** | **0.0000235** | 22.84 |
 
 ### LoRA Training Curve
 
 ![Qwen2.5-VL-3B LoRA Training Curve](figures/qwen3b_lora_loss_curve.svg)
 
-Validation loss reached its minimum at **Epoch 2**, which was selected as the `best_adapter` checkpoint. Training loss continued to decrease at Epoch 3 while validation loss rose slightly, indicating the beginning of mild overfitting.
+Across the extended five-epoch run, validation loss fluctuated early but reached its minimum at **Epoch 5**, which was selected as the `best_adapter` checkpoint. The result indicates continued in-domain convergence through Epoch 5, although the extremely low validation loss motivates additional checks for dataset bias, near-duplicate leakage, and cross-dataset generalisation.
 
 Training history is available in `github_results/qwen3b_lora_training_history.csv`.
 
@@ -132,13 +134,13 @@ For a controlled before/after comparison, the original Qwen2.5-VL-3B model and t
 | Model | N | Accuracy | Precision | Recall | F1 | MCC | TN | FP | FN | TP |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | Qwen2.5-VL-3B Base | 500 | 77.40% | 96.60% | 56.80% | 71.54% | 0.6014 | 245 | 5 | 108 | 142 |
-| **Qwen2.5-VL-3B + LoRA** | **500** | **99.40%** | **99.60%** | **99.20%** | **99.40%** | **0.9880** | **249** | **1** | **2** | **248** |
+| **Qwen2.5-VL-3B + LoRA (5 epochs)** | **500** | **99.60%** | **100.00%** | **99.20%** | **99.60%** | **0.9920** | **250** | **0** | **2** | **248** |
 
-Under the controlled classification-only setting, LoRA fine-tuning improved Accuracy by **22.0 percentage points**, Recall by **42.4 percentage points**, and F1 by approximately **27.86 percentage points**. MCC increased from **0.6014 to 0.9880**, while false negatives decreased from **108 to 2**.
+Under the controlled classification-only setting, the five-epoch LoRA run improved Accuracy by **22.2 percentage points**, Recall by **42.4 percentage points**, and F1 by approximately **28.06 percentage points**. MCC increased from **0.6014 to 0.9920**. False positives decreased from **5 to 0**, while false negatives decreased from **108 to 2**.
 
 > **Important:** The 86.8% Qwen2.5-VL-3B benchmark baseline used the original benchmark prompt, which also requested an explanation. The 77.4% Base result above uses the classification-only prompt used for the controlled LoRA comparison. These values are therefore not directly interchangeable.
 
-> **Generalization note:** The 99.4% result is an in-domain result on a held-out FakeBench split. Cross-dataset and unseen-generator generalization have not yet been established.
+> **Generalization note:** The 99.6% result is an in-domain result on a held-out FakeBench split. Cross-dataset and unseen-generator generalization have not yet been established. Because performance is close to saturation, the next priority is to check exact/near-duplicate leakage and evaluate external generalisation.
 
 The evaluation summary is available in `github_results/qwen3b_base_vs_lora_summary.csv`.
 
@@ -151,16 +153,16 @@ The evaluation summary is available in `github_results/qwen3b_base_vs_lora_summa
 
 ### Model Weights
 
-The best LoRA adapter is published on Hugging Face:
+The previously published LoRA adapter is available on Hugging Face:
 
 **[NTX88666/Qwen2.5-VL-3B-FakeBench-LoRA](https://huggingface.co/NTX88666/Qwen2.5-VL-3B-FakeBench-LoRA)**
 
-The adapter weights are intentionally not duplicated in this GitHub repository.
+The adapter weights are intentionally not duplicated in this GitHub repository. The latest five-epoch experiment reported above was evaluated on UTS HPC; the Hugging Face repository should be refreshed separately if the five-epoch checkpoint is to replace the previously published adapter.
 
 ## Key Observations
 
 - Qwen2.5-VL-3B achieved the strongest overall benchmark baseline result, with 86.8% accuracy and 87.1% F1 under the original benchmark prompt.
-- In the controlled classification-only evaluation, LoRA fine-tuning reached 99.4% in-domain accuracy and 0.9880 MCC.
+- In the controlled classification-only evaluation, the five-epoch LoRA run reached 99.6% in-domain accuracy and 0.9920 MCC.
 - The LoRA model reduced false negatives from 108 to 2.
 - LLaVA-OneVision-7B benefited substantially from the EtC strategy.
 - Larger parameter count did not consistently lead to better fake-image detection performance.
@@ -178,7 +180,7 @@ Approximate end-to-end runtime for completed 500-image benchmark experiments:
 | BLIP2-OPT-2.7B | 5m |
 | Qwen2.5-VL-3B | Recorded in final runtime CSV |
 
-LoRA fine-tuning took approximately **98 minutes** across three epochs on a single NVIDIA RTX PRO 6000 Blackwell 96GB GPU.
+LoRA fine-tuning took approximately **134 minutes** across five epochs on a single NVIDIA RTX PRO 6000 Blackwell 96GB GPU.
 
 ## Result Visualisations
 
