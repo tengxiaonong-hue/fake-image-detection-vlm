@@ -185,13 +185,13 @@ This follow-up experiment investigates whether the high in-domain LoRA scores su
 | Base | Test-OOD | 500 | 62.60% | 78.90% | 34.40% | 47.91% | 0.3052 |
 | LoRA V2 | Test-OOD | 500 | 91.00% | 93.62% | 88.00% | 90.72% | 0.8215 |
 
-Full precision/recall, confidence intervals, confusion counts and latency are preserved in [V2 summary.csv](github_results/lora_v2/summary.csv); generator-specific breakdowns are available in the local V2 experiment artifact `per_generator.csv` (not yet uploaded).
+Full precision/recall, confidence intervals, confusion counts and latency are preserved in [V2 summary.csv](github_results/lora_v2/summary.csv); generator-specific breakdowns are available in [per_generator.csv](github_results/lora_v2/per_generator.csv).
 
 ### Shortcut and Generalization Caveat
 
 A classifier using only image metadata (dimensions, format and file size) achieved **99.5%** accuracy on validation, **99.8%** on Test-ID and **77.6%** on Test-OOD. This indicates severe dataset-level shortcut signals; therefore the strong V2 results **do not yet establish robust visual-forensic generalization**. Next steps are standardized image encoding/resize, repeat evaluation, leakage checks and testing on a genuinely independent external dataset.
 
-The published V2 summary and split audit are stored in [github_results/lora_v2](github_results/lora_v2). Additional V2 scripts, prediction-level CSVs, and split manifests are not yet published. The uploaded split CSVs include original HPC absolute paths for provenance, which may need remapping on another machine. No source images or model weights are included.
+The published V2 summary and split audit are stored in [github_results/lora_v2](github_results/lora_v2). V2 source scripts, prediction-level CSVs, and split manifests are not yet published. The uploaded split CSVs include original HPC absolute paths for provenance, which may need remapping on another machine. No source images or model weights are included.
 
 ## Key Observations
 
