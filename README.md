@@ -163,6 +163,36 @@ The previously published LoRA adapter is available on Hugging Face:
 
 The adapter weights are intentionally not duplicated in this GitHub repository. The latest five-epoch experiment reported above was evaluated on UTS HPC; the Hugging Face repository should be refreshed separately if the five-epoch checkpoint is to replace the previously published adapter.
 
+## LoRA V2: Duplicate-Aware and Held-Out Generator Evaluation
+
+This follow-up experiment investigates whether the high in-domain LoRA scores survive a stricter split. It **does not replace** the earlier five-epoch results: the datasets and evaluation protocols differ.
+
+### Data Audit and Split
+
+- FakeBench images audited: **6,000**; perceptual-hash groups: **5,979**; near-duplicate images flagged: **21**; groups containing both real and fake: **3**.
+- Group-aware partitioning was used to reduce overlap between splits.
+- Two fake-image generators were held out for OOD evaluation; the remaining eight were represented in the training-side distribution.
+- **Train:** 3,537 (1,944 real / 1,593 fake); **Validation:** 1,000 (500 / 500).
+- **Test-ID:** 449 (250 real / 199 fake), retaining 449 images from the original 500-image test selection.
+- **Test-OOD:** 500 (250 real / 250 fake), with fake images from two held-out generators.
+
+### Base vs LoRA V2 Results
+
+| Model | Split | N | Accuracy | Precision | Recall | F1 | MCC |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Base | Test-ID | 449 | 73.05% | 89.80% | 44.22% | 59.26% | 0.4837 |
+| LoRA V2 | Test-ID | 449 | 93.99% | — | — | 92.99% | 0.8789 |
+| Base | Test-OOD | 500 | 62.60% | 78.90% | 34.40% | 47.91% | 0.3052 |
+| LoRA V2 | Test-OOD | 500 | 91.00% | — | — | 90.72% | 0.8215 |
+
+Full precision/recall, confidence intervals, confusion counts and latency are preserved in [V2 summary.csv](github_results/lora_v2/summary.csv); generator-specific breakdowns are in [per_generator.csv](github_results/lora_v2/per_generator.csv).
+
+### Shortcut and Generalization Caveat
+
+A classifier using only image metadata (dimensions, format and file size) achieved **99.5%** accuracy on validation, **99.8%** on Test-ID and **77.6%** on Test-OOD. This indicates severe dataset-level shortcut signals; therefore the strong V2 results **do not yet establish robust visual-forensic generalization**. Next steps are standardized image encoding/resize, repeat evaluation, leakage checks and testing on a genuinely independent external dataset.
+
+The V2 experiment artifacts are stored separately in [github_results/lora_v2](github_results/lora_v2). The uploaded split CSVs include original HPC absolute paths for provenance, which may need remapping on another machine. No source images or model weights are included.
+
 ## Key Observations
 
 - Qwen2.5-VL-3B achieved the strongest overall benchmark baseline result, with 86.8% accuracy and 87.1% F1 under the original benchmark prompt.
