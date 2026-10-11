@@ -191,7 +191,7 @@ Full precision/recall, confidence intervals, confusion counts and latency are pr
 
 A classifier using only image metadata (dimensions, format and file size) achieved **99.5%** accuracy on validation, **99.8%** on Test-ID and **77.6%** on Test-OOD. This indicates severe dataset-level shortcut signals; therefore the strong V2 results **do not yet establish robust visual-forensic generalization**. Next steps are standardized image encoding/resize, repeat evaluation, leakage checks and testing on a genuinely independent external dataset.
 
-The published V2 summary and split audit are stored in [github_results/lora_v2](github_results/lora_v2). V2 source scripts, prediction-level CSVs, and split manifests are not yet published. The uploaded split CSVs include original HPC absolute paths for provenance, which may need remapping on another machine. No source images or model weights are included.
+The published V2 summary and split audit are stored in [github_results/lora_v2](github_results/lora_v2). The original V2 source bundle is now published: [split construction](src/make_clean_splits.py), [training](src/train_qwen3b_lora_v2.py), [evaluation](src/eval_qwen3b_lora_v2.py), [image normalisation](src/imgnorm.py), [PBS workflow](scripts/run_lora_v2_all.sh), and [run instructions](README_v2.md). Prediction-level CSVs, split manifests and source images are not included in the repository. The uploaded split CSVs include original HPC absolute paths for provenance, which may need remapping on another machine. No source images or model weights are included.
 
 ## Key Observations
 
