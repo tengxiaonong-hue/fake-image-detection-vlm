@@ -181,9 +181,9 @@ This follow-up experiment investigates whether the high in-domain LoRA scores su
 | Model | Split | N | Accuracy | Precision | Recall | F1 | MCC |
 |---|---|---:|---:|---:|---:|---:|---:|
 | Base | Test-ID | 449 | 73.05% | 89.80% | 44.22% | 59.26% | 0.4837 |
-| LoRA V2 | Test-ID | 449 | 93.99% | — | — | 92.99% | 0.8789 |
+| LoRA V2 | Test-ID | 449 | 93.99% | 96.24% | 89.95% | 92.99% | 0.8789 |
 | Base | Test-OOD | 500 | 62.60% | 78.90% | 34.40% | 47.91% | 0.3052 |
-| LoRA V2 | Test-OOD | 500 | 91.00% | — | — | 90.72% | 0.8215 |
+| LoRA V2 | Test-OOD | 500 | 91.00% | 93.62% | 88.00% | 90.72% | 0.8215 |
 
 Full precision/recall, confidence intervals, confusion counts and latency are preserved in [V2 summary.csv](github_results/lora_v2/summary.csv); generator-specific breakdowns are in [per_generator.csv](github_results/lora_v2/per_generator.csv).
 
