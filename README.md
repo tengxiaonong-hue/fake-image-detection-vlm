@@ -163,35 +163,95 @@ The previously published LoRA adapter is available on Hugging Face:
 
 The adapter weights are intentionally not duplicated in this GitHub repository. The latest five-epoch experiment reported above was evaluated on UTS HPC; the Hugging Face repository should be refreshed separately if the five-epoch checkpoint is to replace the previously published adapter.
 
-## LoRA V2: Duplicate-Aware and Held-Out Generator Evaluation
+## LoRA V2: A Fairer Test of Fake Image Detection
 
-This follow-up experiment investigates whether the high in-domain LoRA scores survive a stricter split. It **does not replace** the earlier five-epoch results: the datasets and evaluation protocols differ.
+### Why did we build V2?
 
-### Data Audit and Split
+In V1, we fine-tuned Qwen2.5-VL-3B with LoRA and achieved **99.6% accuracy** on a 500-image test set. This was encouraging, but it did not answer an important question: **did the model learn general clues about AI-generated images, or just patterns specific to FakeBench?**
 
-- FakeBench images audited: **6,000**; perceptual-hash groups: **5,979**; near-duplicate images flagged: **21**; groups containing both real and fake: **3**.
-- Group-aware partitioning was used to reduce overlap between splits.
-- Two fake-image generators were held out for OOD evaluation; the remaining eight were represented in the training-side distribution.
-- **Train:** 3,537 (1,944 real / 1,593 fake); **Validation:** 1,000 (500 / 500).
-- **Test-ID:** 449 (250 real / 199 fake), retaining 449 images from the original 500-image test selection.
-- **Test-OOD:** 500 (250 real / 250 fake), with fake images from two held-out generators.
+We identified three possible problems:
 
-### Base vs LoRA V2 Results
+1. **Similar images across splits:** two slightly different copies of an image could make testing too easy.
+2. **Familiar AI generators:** if training and testing use the same generators, the model might mainly learn their particular styles.
+3. **Dataset shortcuts:** real and fake files might differ in size, format or compression. These differences can reveal the label even without understanding the picture.
 
-| Model | Split | N | Accuracy | Precision | Recall | F1 | MCC |
-|---|---|---:|---:|---:|---:|---:|---:|
-| Base | Test-ID | 449 | 73.05% | 89.80% | 44.22% | 59.26% | 0.4837 |
-| LoRA V2 | Test-ID | 449 | 93.99% | 96.24% | 89.95% | 92.99% | 0.8789 |
-| Base | Test-OOD | 500 | 62.60% | 78.90% | 34.40% | 47.91% | 0.3052 |
-| LoRA V2 | Test-OOD | 500 | 91.00% | 93.62% | 88.00% | 90.72% | 0.8215 |
+V2 is designed to test these concerns rather than simply chase a higher score.
 
-Full precision/recall, confidence intervals, confusion counts and latency are preserved in [V2 summary.csv](github_results/lora_v2/summary.csv); generator-specific breakdowns are available in [per_generator.csv](github_results/lora_v2/per_generator.csv).
+### What changed in V2?
 
-### Shortcut and Generalization Caveat
+**1. Check similar images before splitting**
 
-A classifier using only image metadata (dimensions, format and file size) achieved **99.5%** accuracy on validation, **99.8%** on Test-ID and **77.6%** on Test-OOD. This indicates severe dataset-level shortcut signals; therefore the strong V2 results **do not yet establish robust visual-forensic generalization**. Next steps are standardized image encoding/resize, repeat evaluation, leakage checks and testing on a genuinely independent external dataset.
+We use perceptual hashing (**dHash**) to group images that look very similar. Across **6,000 images**, the audit found **5,979 groups**, meaning **21 images were additional members of near-duplicate groups**. This is **not** the same as deleting 21 images: 5,979 is a *group count*, not a new image count. Three groups contained both real and fake labels.
 
-The published V2 summary and split audit are stored in [github_results/lora_v2](github_results/lora_v2). The original V2 source bundle is now published: [split construction](src/make_clean_splits.py), [training](src/train_qwen3b_lora_v2.py), [evaluation](src/eval_qwen3b_lora_v2.py), [image normalisation](src/imgnorm.py), [PBS workflow](scripts/run_lora_v2_all.sh), and [run instructions](README_v2.md). Prediction-level CSVs, split manifests and source images are not included in the repository. The uploaded split CSVs include original HPC absolute paths for provenance, which may need remapping on another machine. No source images or model weights are included.
+We keep each group in just one split to reduce the chance that the model sees one version during training and another during testing. Perceptual hashing reduces this risk, but cannot guarantee that every near-duplicate has been found.
+
+**2. Hold out two AI generators**
+
+FakeBench contains images from **10 AI generators**. V2 uses eight generators in the training-side distribution and saves **DALL·E 3 and StyleGAN** for a different test. The model has not trained on fake images from these two held-out generators.
+
+Why? It is like learning from questions written by eight teachers, then taking an exam written by two new teachers. We want to see whether the model learned something useful beyond the styles it already knows.
+
+**3. Use two test sets**
+
+| Split | Real | Fake | Total | Purpose |
+|---|---:|---:|---:|---|
+| Train | 1,944 | 1,593 | 3,537 | Fine-tune the LoRA adapter |
+| Validation | 500 | 500 | 1,000 | Choose the best checkpoint |
+| Test-ID | 250 | 199 | 449 | Test on **seen generators**, using unseen images |
+| Test-OOD | 250 | 250 | 500 | Test on **unseen generators** |
+
+- **ID** means *in-distribution*. Its fake images come from generators represented during training, but the specific test images were not used for training.
+- **OOD** means *out-of-distribution*. Its fake images come from the two held-out generators.
+- **Why is Test-ID 449 instead of 500?** We started with the original 500-image test selection. **51 images** were excluded from Test-ID because they belonged to the held-out-generator groups. This left **250 real and 199 fake** images. We kept the remaining original test images instead of filling the gap with new ones.
+- **Why are Train real/fake counts unequal?** Holding out generators reduces the pool of available fake images. However, the currently published `balanced()` function in [make_clean_splits.py](src/make_clean_splits.py) should produce equal real/fake counts and an even total. **The reported 3,537 (1,944 real / 1,593 fake) does not match that code as published.** We need to check which script version produced these split files before claiming the split is exactly reproducible.
+
+**4. Make image handling more consistent**
+
+V2 adds [imgnorm.py](src/imgnorm.py), which can apply the same RGB conversion, resizing, cropping and JPEG re-encoding to real and fake images. The training and evaluation scripts support this preprocessing through `--norm-size` (default: 448). This is intended to reduce easy file-format and resolution clues; it does not prove those clues were fully removed in the reported run.
+
+### Did the new LoRA model work?
+
+Both models were evaluated under the V2 protocol:
+
+| Model | Test-ID Accuracy | Test-OOD Accuracy | Test-ID F1 | Test-OOD F1 |
+|---|---:|---:|---:|---:|
+| Base Qwen2.5-VL-3B | 73.05% | 62.60% | 59.26% | 47.91% |
+| **LoRA V2** | **93.99%** | **91.00%** | **92.99%** | **90.72%** |
+
+The LoRA model improved accuracy by **20.94 percentage points on Test-ID** and **28.40 percentage points on Test-OOD**. Its OOD score is promising because the held-out generators did not provide fake training images.
+
+**Important:** The earlier V1 score of 99.6% used a **different test split and protocol**. Do not interpret the difference between 99.6% and 93.99% as a direct measure of V2 improving or worsening the model.
+
+Detailed files: [summary.csv](github_results/lora_v2/summary.csv), [per_generator.csv](github_results/lora_v2/per_generator.csv) and [split_report.txt](github_results/lora_v2/split_report.txt).
+
+### What still needs to be checked?
+
+Our metadata-only shortcut test was surprisingly strong:
+
+| Split | Accuracy using only metadata |
+|---|---:|
+| Validation | 99.5% |
+| Test-ID | 99.8% |
+| Test-OOD | 77.6% |
+
+This test uses properties such as image dimensions, file format and file size instead of image content. These results show **strong dataset bias remains a serious concern**. Even a high OOD result does not yet prove the model will work reliably on arbitrary online images or completely independent datasets.
+
+Our next priorities are to resolve the train-split/code mismatch, verify the exact preprocessing used in the recorded run, re-test with consistently normalized images and evaluate on an external dataset.
+
+### Code and Reproducibility
+
+The V2 workflow is:
+
+`make_clean_splits.py` (audit and split) → `imgnorm.py` (consistent image input) → `train_qwen3b_lora_v2.py` (LoRA training) → `eval_qwen3b_lora_v2.py` (ID/OOD evaluation).
+
+- [Split generation](src/make_clean_splits.py)
+- [Image preprocessing](src/imgnorm.py)
+- [LoRA V2 training](src/train_qwen3b_lora_v2.py)
+- [Base vs LoRA V2 evaluation](src/eval_qwen3b_lora_v2.py)
+- [HPC job script](scripts/run_lora_v2_all.sh)
+- [V2 running instructions](README_v2.md)
+
+The repository includes V2 source code and summary results. **It does not currently include the full split CSVs, individual-image predictions, training history, source images or V2 adapter weights.** Local HPC paths may need to be changed when reproducing the experiment elsewhere.
 
 ## Key Observations
 
