@@ -1,0 +1,26 @@
+images=6000  groups=5979  near-duplicate images=21
+groups mixing real and fake (e.g. edited/derived pairs): 3
+fake generators:
+generator
+Glide         300
+FuseDream     300
+VQDM          300
+sd            300
+cogview2      300
+proGAN        300
+styleGAN      300
+midjourney    300
+dalle2        300
+dalle3        300
+old test kept as test_id: 449/500 images (51 moved out because of held-out generators), 449 groups
+
+Split sizes:
+  train      3537  {'real': 1944, 'fake': 1593}  generators=8
+  val        1000  {'fake': 500, 'real': 500}  generators=8
+  test_id     449  {'real': 250, 'fake': 199}  generators=8
+  test_ood    500  {'real': 250, 'fake': 250}  generators=2
+
+Shortcut check (metadata only: size/format/bytes; chance = 50%):
+  val       accuracy from metadata alone: 99.5%
+  test_id   accuracy from metadata alone: 99.8%
+  test_ood  accuracy from metadata alone: 77.6%
