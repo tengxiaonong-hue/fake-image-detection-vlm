@@ -4,7 +4,12 @@ Benchmarking Reasoning Strategies and LoRA Fine-tuning for AI-Generated Image De
 
 This repository investigates explainable AI-generated image detection using compact and medium-scale vision-language models. The study combines multi-model benchmarking, reasoning-strategy evaluation, and parameter-efficient LoRA fine-tuning of Qwen2.5-VL-3B.
 
-**Model weights:** [NTX88666/Qwen2.5-VL-3B-FakeBench-LoRA on Hugging Face](https://huggingface.co/NTX88666/Qwen2.5-VL-3B-FakeBench-LoRA)
+**LoRA model weights (Hugging Face):** Two versions are available. **V1** is the initial fine-tuning experiment; **V2** adds a stricter split and held-out-generator testing. Both are LoRA adapters for `Qwen/Qwen2.5-VL-3B-Instruct`, not standalone full models.
+
+- **[LoRA V1 — Original Fine-tuning](https://huggingface.co/NTX88666/Qwen2.5-VL-3B-FakeBench-LoRA)** · 5-epoch follow-up results are documented in this repository; this HF release is the earlier V1 adapter.
+- **[LoRA V2 — Leakage-Aware and OOD Evaluation](https://huggingface.co/NTX88666/Qwen2.5-VL-3B-FakeBench-LoRA-V2)** · Best checkpoint: Epoch 3; Test-ID accuracy 93.99%, held-out-generator Test-OOD accuracy 91.00%.
+
+The V1 and V2 scores come from **different evaluation splits/protocols** and should not be compared as a direct before-and-after benchmark.
 
 The project compares multiple vision-language models under three reasoning strategies:
 
@@ -224,6 +229,10 @@ The LoRA model improved accuracy by **20.94 percentage points on Test-ID** and *
 
 Detailed files: [summary.csv](github_results/lora_v2/summary.csv), [per_generator.csv](github_results/lora_v2/per_generator.csv) and [split_report.txt](github_results/lora_v2/split_report.txt).
 
+### Published V2 Adapter
+
+The best V2 adapter (Epoch 3) is available at **[NTX88666/Qwen2.5-VL-3B-FakeBench-LoRA-V2 on Hugging Face](https://huggingface.co/NTX88666/Qwen2.5-VL-3B-FakeBench-LoRA-V2)**. This is a separate release from [V1](https://huggingface.co/NTX88666/Qwen2.5-VL-3B-FakeBench-LoRA), so the original adapter remains available.
+
 ### V2 Training: Three Epochs
 
 We also checked the actual training-history CSV and the separately uploaded Epoch 1, Epoch 2, Epoch 3, best-adapter and final-adapter archives.
@@ -244,7 +253,7 @@ The uploaded `best_adapter`, `final_adapter`, and `epoch_3` archives have **iden
 - [Checkpoint file audit](github_results/lora_v2/checkpoint_audit.csv)
 - [V2 loss curve SVG](figures/qwen3b_lora_v2_loss_curve.svg)
 
-**Model files:** LoRA adapter weights are approximately **148.7 MB per checkpoint uncompressed** and are intentionally **not committed to GitHub**. Keeping five large, mostly overlapping checkpoints out of the source repository avoids unnecessary bloat. The earlier Hugging Face adapter is still the V1 release, not this V2 adapter.
+**Model files:** LoRA adapter weights are approximately **148.7 MB per checkpoint uncompressed** and are intentionally **not committed to GitHub**. Keeping five large, mostly overlapping checkpoints out of the source repository avoids unnecessary bloat. Both V1 and V2 adapters are published separately on Hugging Face; large weight files are not copied into GitHub.
 
 ### What still needs to be checked?
 
