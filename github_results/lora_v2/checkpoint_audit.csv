@@ -1,0 +1,6 @@
+checkpoint,adapter_bytes,adapter_sha256,notes
+epoch_1,148712776,9abcc83b97a14d71,Full 64-character SHA-256 not recorded in this table; prefix shown
+epoch_2,148712776,5071817aa5211d4c,Full 64-character SHA-256 not recorded in this table; prefix shown
+epoch_3,148712776,477a659d3f51cb55,Full 64-character SHA-256 not recorded in this table; prefix shown
+best_adapter,148712776,477a659d3f51cb55,Identical adapter weights to epoch_3
+final_adapter,148712776,477a659d3f51cb55,Identical adapter weights to epoch_3
