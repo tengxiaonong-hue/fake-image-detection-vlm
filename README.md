@@ -224,6 +224,28 @@ The LoRA model improved accuracy by **20.94 percentage points on Test-ID** and *
 
 Detailed files: [summary.csv](github_results/lora_v2/summary.csv), [per_generator.csv](github_results/lora_v2/per_generator.csv) and [split_report.txt](github_results/lora_v2/split_report.txt).
 
+### V2 Training: Three Epochs
+
+We also checked the actual training-history CSV and the separately uploaded Epoch 1, Epoch 2, Epoch 3, best-adapter and final-adapter archives.
+
+| Epoch | Training Loss | Validation Loss | Validation Accuracy | Time (min) |
+|---|---:|---:|---:|---:|
+| 1 | 0.085577 | 0.055767 | 89.10% | 18.15 |
+| 2 | 0.035787 | **0.042099** | 92.20% | 17.59 |
+| 3 | **0.018480** | 0.045996 | **93.10%** | 17.57 |
+
+![LoRA V2 training and validation loss](figures/qwen3b_lora_v2_loss_curve.svg)
+
+**How to read this:** Training loss steadily decreased. Validation loss was lowest at **Epoch 2**, then rose slightly at Epoch 3. This may suggest early overfitting, but accuracy on validation images still increased. The V2 training code selects the best checkpoint by **highest validation accuracy** (using validation loss to break ties), so **Epoch 3** is correctly selected.
+
+The uploaded `best_adapter`, `final_adapter`, and `epoch_3` archives have **identical adapter weight SHA-256 hashes**. All five separately uploaded checkpoint archives contained the adapter weights and configuration. This confirms the packaged best and final adapters correspond to Epoch 3. It does **not** independently verify the HPC run itself or cross-dataset robustness.
+
+- [Actual three-epoch training-history CSV](github_results/lora_v2/training_history.csv)
+- [Checkpoint file audit](github_results/lora_v2/checkpoint_audit.csv)
+- [V2 loss curve SVG](figures/qwen3b_lora_v2_loss_curve.svg)
+
+**Model files:** LoRA adapter weights are approximately **148.7 MB per checkpoint uncompressed** and are intentionally **not committed to GitHub**. Keeping five large, mostly overlapping checkpoints out of the source repository avoids unnecessary bloat. The earlier Hugging Face adapter is still the V1 release, not this V2 adapter.
+
 ### What still needs to be checked?
 
 Our metadata-only shortcut test was surprisingly strong:
@@ -251,7 +273,7 @@ The V2 workflow is:
 - [HPC job script](scripts/run_lora_v2_all.sh)
 - [V2 running instructions](README_v2.md)
 
-The repository includes V2 source code and summary results. **It does not currently include the full split CSVs, individual-image predictions, training history, source images or V2 adapter weights.** Local HPC paths may need to be changed when reproducing the experiment elsewhere.
+The repository includes V2 source code and summary results. **It does not currently include the full split CSVs, individual-image predictions, source images or V2 adapter weights.** Local HPC paths may need to be changed when reproducing the experiment elsewhere.
 
 ## Key Observations
 
