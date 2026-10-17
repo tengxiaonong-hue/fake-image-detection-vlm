@@ -307,30 +307,45 @@ The V2 workflow is:
 
 The repository includes V2 source code and summary results. **It does not currently include the full split CSVs, individual-image predictions, source images or V2 adapter weights.** Local HPC paths may need to be changed when reproducing the experiment elsewhere.
 
-## External Cross-Dataset Generalization (GenImage — Pending)
+## External Cross-Dataset Generalization: Tiny-GenImage (Completed)
 
-To evaluate transfer beyond FakeBench, we plan a **zero-retraining test** using the independently sourced **[Tiny-GenImage](https://huggingface.co/datasets/TheKernel01/Tiny-GenImage)** validation split, a third-party curated subset of the [GenImage benchmark](https://github.com/GenImage-Dataset/GenImage). This is a new data source, **not** the FakeBench held-out-generator Test-OOD.
+To test whether FakeBench-trained **LoRA V2** transfers to a genuinely different data source, we evaluated the *unchanged V2 best adapter* (no additional training) on the **validation split of [TheKernel01/Tiny-GenImage](https://huggingface.co/datasets/TheKernel01/Tiny-GenImage)**, a third-party curated subset of [GenImage](https://github.com/GenImage-Dataset/GenImage). This is distinct from the FakeBench held-out-generator Test-OOD.
 
-- Model: published **LoRA V2 best adapter**, unchanged; no external fine-tuning or checkpoint selection.
-- Fixed sample: **500 real + 250 ADM fake + 250 BigGAN fake**; fail if the validation subset cannot supply those counts.
-- Image input: **224 × 224** normalization, matching the V2 HPC logs.
-- Metrics: Accuracy, F1, MCC, confidence interval, confusion matrix, per-generator correct rate.
-- Main limitations: the subset is curated rather than the full official GenImage benchmark; exact overlap and shortcut audits are still needed. **No scores are reported until evaluation has actually run.**
+### Evaluation protocol
 
-**UTS HPC instructions** (run after transferring the latest repository source files to `~/fakebench/src/` and `~/fakebench/scripts/`):
+- Sample: **1,000 images = 500 real + 250 ADM fake + 250 BigGAN fake**.
+- Preprocessing: **224 × 224**, matching the recorded LoRA V2 HPC settings; evaluation used center cropping and JPEG re-encoding.
+- Model: **Qwen2.5-VL-3B + original V2 LoRA best adapter**, with no tuning on the external test set.
+- Metrics: Accuracy, 95% Wilson CI, Precision, fake-class Recall, F1, MCC, confusion counts, and per-generator detection rate.
 
-```bash
-cd ~/fakebench
-source ~/miniconda3/bin/activate
-conda activate fakebench
-python -c "import datasets; print('datasets available')"
-python src/prepare_genimage_external.py
-qsub scripts/run_genimage_external.sh
-# After completion:
-cat results/genimage_external/summary.csv
-```
+### Overall detection results
 
-Scripts: [external sample preparation](src/prepare_genimage_external.py) · [HPC evaluation job](scripts/run_genimage_external.sh).
+| Evaluation set | N | Accuracy | F1 | MCC |
+|---|---:|---:|---:|---:|
+| FakeBench Test-ID | 449 | 93.99% | 92.99% | 0.8789 |
+| FakeBench Test-OOD (held-out generators) | 500 | 91.00% | 90.72% | 0.8215 |
+| **Tiny-GenImage external dataset** | **1,000** | **79.60%** | **77.87%** | **0.5993** |
+
+On the external data, **Precision = 85.07%**, **Recall = 71.80%**, and the **95% accuracy CI = 76.99%–81.98%**. The confusion matrix counts are **TN 437, FP 63, FN 141, TP 359**; there were no unparseable predictions.
+
+### By-generator generalization
+
+| Image source | N | Correct rate |
+|---|---:|---:|
+| Real | 500 | **87.4%** |
+| ADM generated | 250 | **44.4%** |
+| BigGAN generated | 250 | **99.2%** |
+
+**Main finding:** The model transfers to a different dataset with **79.6% overall accuracy**, but performance is highly generator-dependent. **139 of the 141 missed fake images came from ADM**, while only two came from BigGAN. This asymmetry is more informative than overall accuracy alone.
+
+External accuracy was **11.4 percentage points below** the FakeBench Test-OOD result. Because data sources, image distributions, and generator types differ, this is a *descriptive cross-dataset contrast*, not an isolated causal effect. This experiment does **not** establish robustness to arbitrary AI generators or show the external benefit of LoRA over a base model. Image overlap, potential shortcut signals and effects of dataset curation still require independent auditing.
+
+**Files and code:**
+
+- [Full protocol, analysis and limitations](reports/genimage_external.md)
+- [External test summary CSV](github_results/genimage_external/summary.csv) and [per-generator CSV](github_results/genimage_external/per_generator.csv)
+- [Dataset sampling script](src/prepare_genimage_external.py) and [HPC evaluation job](scripts/run_genimage_external.sh)
+- [Shared V2 evaluation code](src/eval_qwen3b_lora_v2.py)
 
 ## Key Observations
 
@@ -339,7 +354,7 @@ Scripts: [external sample preparation](src/prepare_genimage_external.py) · [HPC
 - The LoRA model reduced false negatives from 108 to 2.
 - LLaVA-OneVision-7B benefited substantially from the EtC strategy.
 - Larger parameter count did not consistently lead to better fake-image detection performance.
-- Cross-dataset generalization remains an important next step before making claims about robustness beyond FakeBench.
+- External Tiny-GenImage evaluation achieved **79.6% accuracy**, with a substantial ADM (44.4%) vs BigGAN (99.2%) detection gap. External robustness remains limited and generator-dependent.
 
 ## Runtime
 
