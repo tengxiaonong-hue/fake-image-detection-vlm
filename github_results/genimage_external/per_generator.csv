@@ -1,0 +1,4 @@
+model,test,generator,truth,n,correct_rate
+Qwen2.5-VL-3B + LoRA,genimage_external,ADM,fake,250,0.444
+Qwen2.5-VL-3B + LoRA,genimage_external,BigGAN,fake,250,0.992
+Qwen2.5-VL-3B + LoRA,genimage_external,real,real,500,0.874
