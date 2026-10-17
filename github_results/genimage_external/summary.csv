@@ -1,0 +1,2 @@
+model,test,N,N_unknown,accuracy,acc_ci95_low,acc_ci95_high,precision,recall,f1,mcc,TN,FP,FN,TP,mean_latency_sec
+Qwen2.5-VL-3B + LoRA,genimage_external,1000,0,0.796,0.7699130750438999,0.8198214009929571,0.8507109004739336,0.718,0.7787418655097614,0.5993376578916711,437,63,141,359,0.11608759876154363
