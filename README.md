@@ -307,6 +307,31 @@ The V2 workflow is:
 
 The repository includes V2 source code and summary results. **It does not currently include the full split CSVs, individual-image predictions, source images or V2 adapter weights.** Local HPC paths may need to be changed when reproducing the experiment elsewhere.
 
+## External Cross-Dataset Generalization (GenImage — Pending)
+
+To evaluate transfer beyond FakeBench, we plan a **zero-retraining test** using the independently sourced **[Tiny-GenImage](https://huggingface.co/datasets/TheKernel01/Tiny-GenImage)** validation split, a third-party curated subset of the [GenImage benchmark](https://github.com/GenImage-Dataset/GenImage). This is a new data source, **not** the FakeBench held-out-generator Test-OOD.
+
+- Model: published **LoRA V2 best adapter**, unchanged; no external fine-tuning or checkpoint selection.
+- Fixed sample: **500 real + 250 ADM fake + 250 BigGAN fake**; fail if the validation subset cannot supply those counts.
+- Image input: **224 × 224** normalization, matching the V2 HPC logs.
+- Metrics: Accuracy, F1, MCC, confidence interval, confusion matrix, per-generator correct rate.
+- Main limitations: the subset is curated rather than the full official GenImage benchmark; exact overlap and shortcut audits are still needed. **No scores are reported until evaluation has actually run.**
+
+**UTS HPC instructions** (run after transferring the latest repository source files to `~/fakebench/src/` and `~/fakebench/scripts/`):
+
+```bash
+cd ~/fakebench
+source ~/miniconda3/bin/activate
+conda activate fakebench
+python -c "import datasets; print('datasets available')"
+python src/prepare_genimage_external.py
+qsub scripts/run_genimage_external.sh
+# After completion:
+cat results/genimage_external/summary.csv
+```
+
+Scripts: [external sample preparation](src/prepare_genimage_external.py) · [HPC evaluation job](scripts/run_genimage_external.sh).
+
 ## Key Observations
 
 - Qwen2.5-VL-3B achieved the strongest overall benchmark baseline result, with 86.8% accuracy and 87.1% F1 under the original benchmark prompt.
