@@ -212,7 +212,7 @@ Why? It is like learning from questions written by eight teachers, then taking a
 
 **4. Make image handling more consistent**
 
-V2 adds [imgnorm.py](src/imgnorm.py), which can apply the same RGB conversion, resizing, cropping and JPEG re-encoding to real and fake images. The training and evaluation scripts support this preprocessing through `--norm-size` (default: 448). This is intended to reduce easy file-format and resolution clues; it does not prove those clues were fully removed in the reported run.
+V2 adds [imgnorm.py](src/imgnorm.py), which can apply the same RGB conversion, resizing, cropping and JPEG re-encoding to real and fake images. The training and evaluation scripts support this preprocessing through `--norm-size` (default: 448). **The recorded V2 HPC logs show that the reported run actually used `--norm-size 224`.** This is intended to reduce easy file-format and resolution clues; it does not prove those clues were fully removed.
 
 ### Did the new LoRA model work?
 
@@ -228,6 +228,29 @@ The LoRA model improved accuracy by **20.94 percentage points on Test-ID** and *
 **Important:** The earlier V1 score of 99.6% used a **different test split and protocol**. Do not interpret the difference between 99.6% and 93.99% as a direct measure of V2 improving or worsening the model.
 
 Detailed files: [summary.csv](github_results/lora_v2/summary.csv), [per_generator.csv](github_results/lora_v2/per_generator.csv) and [split_report.txt](github_results/lora_v2/split_report.txt).
+
+### LoRA V2: Four Single-Factor Ablation Experiments
+
+We compared the recorded V2 LoRA checkpoint against four additional training configurations. Each ablation targets one setting while using the **same V2 split files** (train 3,537, validation 1,000, Test-ID 449, Test-OOD 500). The recorded V2 HPC log reported **224 × 224 image normalization**, even though the training script's default is 448; the ablation commands explicitly use `--norm-size 224`.
+
+| Configuration | Test-ID Accuracy | Test-OOD Accuracy | OOD F1 | OOD MCC |
+|---|---:|---:|---:|---:|
+| **Recorded LoRA V2** | **93.99%** | **91.00%** | **0.9072** | **0.8215** |
+| Fixed training JPEG quality (85; no random quality 70–95) | 92.43% | 90.00% | 0.8932 | 0.8066 |
+| Center crop for training (no random crop) | 95.10% | 90.80% | 0.9038 | 0.8192 |
+| LoRA rank 8 (instead of 16; alpha kept at 32) | 94.21% | 92.40% | 0.9198 | 0.8526 |
+| Skip JPEG re-encoding (keep resizing and cropping) | 85.52% | 88.00% | 0.8864 | 0.7648 |
+
+**Interpretation:** JPEG re-encoding has the largest observed effect in this set of comparisons (−3.0 percentage points on Test-OOD when removed). Random cropping and random JPEG quality have smaller observed differences. Rank 8 slightly exceeds rank 16 on this held-out-generator test, suggesting that higher adapter rank is not necessarily better in this run. These are **single-run observations**, not proof of statistically stable causal effects or external-dataset generalization. FakeBench metadata shortcuts remain a concern; the training-run settings and generated variant source files should be audited before asserting a fully controlled comparison.
+
+**Experiment result files:**
+
+- [Fixed JPEG quality: summary](github_results/lora_v2/ablations/ablation_no_jpeg_quality.csv) · [Per-generator](github_results/lora_v2/ablations/ablation_no_jpeg_quality_per_generator.csv)
+- [No random crop: summary](github_results/lora_v2/ablations/ablation_no_random_crop.csv) · [Per-generator](github_results/lora_v2/ablations/ablation_no_random_crop_per_generator.csv)
+- [LoRA rank 8: summary](github_results/lora_v2/ablations/ablation_rank8.csv) · [Per-generator](github_results/lora_v2/ablations/ablation_rank8_per_generator.csv)
+- [No JPEG re-encoding: summary](github_results/lora_v2/ablations/ablation_no_jpeg_reencode.csv) · [Per-generator](github_results/lora_v2/ablations/ablation_no_jpeg_reencode_per_generator.csv)
+
+[Four-ablation HPC batch script](scripts/run_four_ablations.sh) documents the transformations and training commands. This version is reconstructed from the earlier submitted script, with the queue walltime corrected to six hours; it is **not an independently audited snapshot** of the exact HPC file used for these finished runs. Each uploaded ZIP also includes image-level prediction CSVs; these have not yet been committed to this repository.
 
 ### Published V2 Adapter
 
@@ -267,7 +290,7 @@ Our metadata-only shortcut test was surprisingly strong:
 
 This test uses properties such as image dimensions, file format and file size instead of image content. These results show **strong dataset bias remains a serious concern**. Even a high OOD result does not yet prove the model will work reliably on arbitrary online images or completely independent datasets.
 
-Our next priorities are to resolve the train-split/code mismatch, verify the exact preprocessing used in the recorded run, re-test with consistently normalized images and evaluate on an external dataset.
+Our next priorities are to resolve the train-split/code mismatch, audit exact training parameters and generated ablation variants, and evaluate on an external dataset. The four ablation comparisons reported below are not a substitute for external-data testing.
 
 ### Code and Reproducibility
 
@@ -280,7 +303,7 @@ The V2 workflow is:
 - [LoRA V2 training](src/train_qwen3b_lora_v2.py)
 - [Base vs LoRA V2 evaluation](src/eval_qwen3b_lora_v2.py)
 - [HPC job script](scripts/run_lora_v2_all.sh)
-- [V2 running instructions](README_v2.md)
+- V2 HPC: `cd ~/fakebench` then `qsub scripts/run_lora_v2_all.sh`; use `qstat -u $USER` to monitor, and inspect `results/v2/summary.csv` and `results/v2/per_generator.csv`. To preserve the recorded test design, use the original saved split CSVs and `NORM_SIZE=224`; do not regenerate splits without documenting the change.
 
 The repository includes V2 source code and summary results. **It does not currently include the full split CSVs, individual-image predictions, source images or V2 adapter weights.** Local HPC paths may need to be changed when reproducing the experiment elsewhere.
 
