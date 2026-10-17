@@ -1,0 +1,13 @@
+model,test,generator,truth,n,correct_rate
+Qwen2.5-VL-3B + LoRA,test_id,FuseDream,fake,25,0.88
+Qwen2.5-VL-3B + LoRA,test_id,Glide,fake,25,0.96
+Qwen2.5-VL-3B + LoRA,test_id,VQDM,fake,25,0.8
+Qwen2.5-VL-3B + LoRA,test_id,cogview2,fake,24,1.0
+Qwen2.5-VL-3B + LoRA,test_id,dalle2,fake,25,0.92
+Qwen2.5-VL-3B + LoRA,test_id,midjourney,fake,25,1.0
+Qwen2.5-VL-3B + LoRA,test_id,proGAN,fake,25,1.0
+Qwen2.5-VL-3B + LoRA,test_id,real,real,250,0.964
+Qwen2.5-VL-3B + LoRA,test_id,sd,fake,25,0.92
+Qwen2.5-VL-3B + LoRA,test_ood,dalle3,fake,129,0.9147286821705426
+Qwen2.5-VL-3B + LoRA,test_ood,real,real,250,0.952
+Qwen2.5-VL-3B + LoRA,test_ood,styleGAN,fake,121,0.8099173553719008
