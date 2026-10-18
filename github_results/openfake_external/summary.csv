@@ -1,0 +1,2 @@
+model,test,N,N_unknown,accuracy,acc_ci95_low,acc_ci95_high,precision,recall,f1,mcc,TN,FP,FN,TP,mean_latency_sec
+Qwen2.5-VL-3B + LoRA,openfake_external,5000,0,0.816,0.8050182664989265,0.8264965280541225,0.7992424242424242,0.844,0.8210116731517509,0.6329933128834067,1970,530,390,2110,0.10561890541948378
