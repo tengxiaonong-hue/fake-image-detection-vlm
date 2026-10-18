@@ -347,29 +347,26 @@ External accuracy was **11.4 percentage points below** the FakeBench Test-OOD re
 - [Dataset sampling script](src/prepare_genimage_external.py) and [HPC evaluation job](scripts/run_genimage_external.sh)
 - [Shared V2 evaluation code](src/eval_qwen3b_lora_v2.py)
 
-## Modern-Generator External Evaluation (2026; Pending)
+## Modern-Generator External Evaluation: OpenFake v2 (Pending)
 
-A second **inference-only** external test is prepared for the [MLLM-Generated Image Detection Dataset](https://huggingface.co/datasets/zr-zhang/MLLM-Generated-Image-Detection-Dataset), a 2026 benchmark with **three source labels**: GPT Image 2 fake, Nano Banana 2 fake, and real. The evaluation script maps both fake-generator labels to the binary Fake class. Its publicly available split is named `train` by the dataset authors, but **none of it is used for our LoRA training, validation or checkpoint selection**: the split is held entirely for external inference.
+**Chosen dataset:** [ComplexDataLab/OpenFake](https://huggingface.co/datasets/ComplexDataLab/OpenFake), **`core/test` split**. This source has an explicit binary `label` field with only **`real`** and **`fake`**, and includes recent generators such as GPT Image, Nano Banana, and FLUX.2. We use a balanced, curated subset of **2,500 real + 2,500 fake images** (first distinct records encountered in streaming order). This is a **different dataset from FakeBench** and the already tested Tiny-GenImage.
 
-- Planned sample: **all 4,356 labeled images**; use original class distribution without artificial balancing.
-- Model: existing **LoRA V2 best adapter**, unchanged (no additional training).
-- Evaluation: `--norm-size 224`; Accuracy, F1, MCC, confusion matrix, 95% CI.
-- The preparation script verifies the three class names before mapping them to Real/Fake, saves decoded RGB pixels losslessly as PNG (the streaming dataset did not expose original image bytes), and writes a sample manifest including source-label counts and duplicate-image counts. This changes file encoding before the fixed evaluation normalization; the limitation should be reported.
-- No test score is claimed until the GPU evaluation finishes. Generator-specific comparisons require trustworthy generator metadata.
-
-Prepare images **before** requesting GPU time:
+- **No additional model training**: test original LoRA V2 best adapter as-is, with 224px preprocessing.
+- Metrics: Accuracy, F1, MCC, confusion counts, per-generator correct rate.
+- Preparation script validates literal `real`/`fake` labels, preserves decoded image pixels as PNG, and outputs a sample manifest. It stops if fewer than 2,500 examples are available for either class. Sampling by stream order may not give equal coverage of generators; inspect `manifest.json`.
+- No OpenFake accuracy is claimed until the actual GPU test finishes.
+- The prior MLLM-Generated-Image-Detection-Dataset attempt was **not evaluated**, because its `label` describes texture/structure/hybrid rather than real/fake. Do not use `prepare_mllm2026_external.py` for binary classification; it is superseded by this workflow.
 
 ```bash
 cd ~/fakebench
-source ~/miniconda3/bin/activate
-conda activate fakebench
-python src/prepare_mllm2026_external.py
-qsub scripts/run_mllm2026_external.sh
-# After completion:
-cat results/external_mllm2026/summary.csv
+source ~/miniconda3/bin/activate && conda activate fakebench
+python src/prepare_openfake_external.py
+qsub scripts/run_openfake_external.sh
+# After evaluation:
+cat results/openfake_external/summary.csv
 ```
 
-[Dataset preparation](src/prepare_mllm2026_external.py) · [PBS inference job](scripts/run_mllm2026_external.sh).
+Scripts: [prepare_openfake_external.py](src/prepare_openfake_external.py) · [run_openfake_external.sh](scripts/run_openfake_external.sh).
 
 ## Key Observations
 
