@@ -1,75 +1,91 @@
 #!/usr/bin/env python3
-"""Prepare ALL labeled images from external MLLMGenSet for zero-shot V2 evaluation.
+"""Prepare a 2026 multimodal-generator external evaluation dataset.
 
-This public dataset names its only split 'train'. That does NOT mean we train
-our model: these images are used ONLY as an unseen external evaluation set.
+Dataset labels are THREE classes: GPT-Image2-fake, Nano-Banana2-fake, real.
+This preparation maps both generated classes to binary 'fake'.
+It does NOT train or tune the detector.
 """
-import argparse, csv, hashlib, io, json, sys
+import argparse, csv, hashlib, json
 from collections import Counter
 from pathlib import Path
-from PIL import Image as PILImage
-from datasets import load_dataset, Image as HFImage
+from PIL import ImageOps
+from datasets import load_dataset
 
-DATASET="zr-zhang/MLLM-Generated-Image-Detection-Dataset"
-EXPECTED=4356
-EXT={"JPEG":".jpg","PNG":".png","WEBP":".webp","BMP":".bmp","GIF":".gif","TIFF":".tif"}
+REPO = "zr-zhang/MLLM-Generated-Image-Detection-Dataset"
+EXPECTED = 4356
+
+def classify(label_name):
+    t = str(label_name).strip().lower().replace("_", "-")
+    if t in ("real", "real-image", "real-images", "natural", "authentic"):
+        return "real", "real"
+    if "fake" in t or "generated" in t or "gpt-image" in t or "nano-banana" in t:
+        if "gpt" in t:
+            return "fake", "GPT-Image2"
+        if "banana" in t or "gemini" in t:
+            return "fake", "Nano-Banana2"
+        return "fake", label_name
+    raise ValueError("Unrecognized label name: " + repr(label_name))
 
 def main():
-    p=argparse.ArgumentParser()
-    p.add_argument("--out",default=str(Path.home()/"fakebench/data_external_mllm2026"))
-    p.add_argument("--expected",type=int,default=EXPECTED)
-    args=p.parse_args()
-    root=Path(args.out); csvpath=root/"mllm2026_external.csv"
-    if csvpath.exists(): raise SystemExit("External CSV already exists; refusing to overwrite.")
-    image_dir=root/"images";image_dir.mkdir(parents=True,exist_ok=True)
-    print("Downloading/streaming",DATASET,"train (external test only)",flush=True)
-    dataset=load_dataset(DATASET,split="train",streaming=True)
-    if "image" not in dataset.column_names or "label" not in dataset.column_names:
-        raise SystemExit("Dataset schema changed: expected image and label. Fields: "+str(dataset.column_names))
-    dataset=dataset.cast_column("image",HFImage(decode=False))
-    rows=[];counts=Counter();sha_seen=set()
-    for idx,record in enumerate(dataset):
-        rawinfo=record["image"]
-        raw=rawinfo.get("bytes") if isinstance(rawinfo,dict) else None
-        path_hint=rawinfo.get("path") if isinstance(rawinfo,dict) else None
-        if not raw:
-            if path_hint and Path(path_hint).is_file():
-                raw=Path(path_hint).read_bytes()
-            else:
-                raise SystemExit("Could not access original image bytes for row "+str(idx)+"; stop rather than silently re-encode.")
-        label=record["label"]
-        if isinstance(label,bool): label=int(label)
-        if isinstance(label,str):
-            label=label.strip().lower()
-            if label in ("real","0"): label=0
-            elif label in ("fake","generated","ai-generated","1"): label=1
-            else: raise SystemExit("Unknown class label "+repr(label))
-        if int(label) not in (0,1): raise SystemExit("Unexpected label "+str(label))
-        with PILImage.open(io.BytesIO(raw)) as im:
-            fmt=(im.format or "").upper()
-            im.verify()
-        if fmt not in EXT: raise SystemExit("Unsupported image encoding: "+fmt)
-        digest=hashlib.sha256(raw).hexdigest()
-        if digest in sha_seen:
-            raise SystemExit("Exact duplicate image at row "+str(idx)+"; investigate before evaluation.")
-        sha_seen.add(digest)
-        out=image_dir/f"{idx:05d}{EXT[fmt]}"
-        if out.exists() and hashlib.sha256(out.read_bytes()).hexdigest()!=digest:
-            raise SystemExit("Output file conflict: "+str(out))
-        if not out.exists(): out.write_bytes(raw)
-        gt="real" if int(label)==0 else "fake"
-        # Only use an explicitly supplied generator field. Never infer model identity from label.
-        generator=record.get("generator") or record.get("source_model") or record.get("model_name") or ""
-        generator=str(generator) if generator is not None else ""
-        if gt=="real": generator="real"
-        rows.append({"absolute_path":str(out.resolve()),"relative_path":"images/"+out.name,"ground_truth":gt,"generator":generator,"sha256":digest})
+    ap=argparse.ArgumentParser()
+    ap.add_argument("--out", default=str(Path.home() / "fakebench/data_external_mllm2026"))
+    ap.add_argument("--expected", type=int, default=EXPECTED)
+    args=ap.parse_args()
+    root=Path(args.out)
+    outcsv=root/"mllm2026_external.csv"
+    if outcsv.exists():
+        raise SystemExit("Prepared CSV already exists; refusing to overwrite.")
+    image_dir=root/"images"
+    image_dir.mkdir(parents=True,exist_ok=True)
+    ds=load_dataset(REPO,split="train",streaming=True)
+    if "image" not in ds.column_names or "label" not in ds.column_names:
+        raise SystemExit("Dataset schema changed. Columns: "+repr(ds.column_names))
+    label_feature=ds.features["label"]
+    if not getattr(label_feature,"names",None):
+        raise SystemExit("Expected class names; cannot safely infer numeric label mapping.")
+    mapping={i:classify(name) for i,name in enumerate(label_feature.names)}
+    if set(gt for gt,_ in mapping.values()) != {"real","fake"}:
+        raise SystemExit("Missing real or fake label in class mapping: "+repr(mapping))
+    print("Verified label mapping:",mapping,flush=True)
+
+    rows=[];counts=Counter();raw_names=Counter();hashes=Counter()
+    for i,rec in enumerate(ds):
+        label=int(rec["label"])
+        if label not in mapping: raise SystemExit("Unexpected label "+str(label))
+        gt,generator=mapping[label]
+        picture=rec["image"]
+        if picture is None:
+            raise SystemExit("Missing image at row "+str(i))
+        # Streaming delivers decoded PIL images even when original bytes are
+        # inaccessible. PNG preserves the decoded RGB pixels losslessly.
+        img=ImageOps.exif_transpose(picture).convert("RGB")
+        fn=f"{i:05d}.png"
+        dest=image_dir/fn
+        if dest.exists():
+            raise SystemExit("Existing image file "+str(dest)+"; refusing to overwrite.")
+        dest.parent.mkdir(parents=True,exist_ok=True)
+        img.save(dest,format="PNG")
+        digest=hashlib.sha256(dest.read_bytes()).hexdigest()
+        hashes[digest]+=1
+        rows.append(dict(absolute_path=str(dest.resolve()),relative_path="images/"+fn,
+                         ground_truth=gt,generator=generator,sha256_png=digest))
         counts[gt]+=1
-        if (idx+1)%500==0: print("Prepared",idx+1,dict(counts),flush=True)
+        raw_names[label_feature.int2str(label)]+=1
+        if (i+1)%500==0:
+            print("Prepared",i+1,dict(raw_names),flush=True)
+
     if len(rows)!=args.expected:
-        raise SystemExit(f"Expected {args.expected} rows, found {len(rows)}. No evaluation CSV written.")
-    if counts["real"]==0 or counts["fake"]==0: raise SystemExit("Missing real or fake class; no CSV written.")
-    with csvpath.open("w",newline="") as f:
-        w=csv.DictWriter(f,fieldnames=list(rows[0]));w.writeheader();w.writerows(rows)
-    (root/"manifest.json").write_text(json.dumps({"repo":DATASET,"split":"train (external testing only)","count":len(rows),"class_counts":dict(counts),"note":"Unseen external dataset. All labeled rows used. Generator breakdown only if explicit metadata present; inspect source files before claiming generator-level results."},indent=2))
-    print("READY",csvpath,len(rows),dict(counts),flush=True)
-if __name__=="__main__":main()
+        raise SystemExit(f"Expected {args.expected} rows, found {len(rows)}. CSV not written.")
+    if counts["real"]==0 or counts["fake"]==0:
+        raise SystemExit("Missing binary class; CSV not written.")
+    with outcsv.open("w",newline="") as f:
+        writer=csv.DictWriter(f,fieldnames=list(rows[0]));writer.writeheader();writer.writerows(rows)
+    manifest=dict(source=REPO,source_split="train (used ONLY for external testing)",
+                  rows=len(rows),original_class_counts=dict(raw_names),
+                  binary_class_counts=dict(counts),label_mapping={str(k):v for k,v in mapping.items()},
+                  duplicate_decoded_images=sum(v-1 for v in hashes.values()),
+                  note="Images saved as lossless PNG from decoded RGB pixel data because streaming did not expose original file bytes. No resize or crop at preparation; evaluation applies fixed V2 224px resize/crop/JPEG. Potential cross-dataset overlap and metadata shortcuts remain unaudited.")
+    (root/"manifest.json").write_text(json.dumps(manifest,indent=2))
+    print("READY",outcsv,"N=",len(rows),"classes=",dict(raw_names),flush=True)
+if __name__=="__main__":
+    main()
