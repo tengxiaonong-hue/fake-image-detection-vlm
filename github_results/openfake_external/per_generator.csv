@@ -1,0 +1,23 @@
+model,test,generator,truth,n,correct_rate
+Qwen2.5-VL-3B + LoRA,openfake_external,aurora-20-1-25,fake,15,0.9333333333333333
+Qwen2.5-VL-3B + LoRA,openfake_external,docci,real,819,0.7521367521367521
+Qwen2.5-VL-3B + LoRA,openfake_external,ernie-image,fake,26,0.9615384615384616
+Qwen2.5-VL-3B + LoRA,openfake_external,ernie-image-turbo,fake,39,0.9743589743589743
+Qwen2.5-VL-3B + LoRA,openfake_external,flux.2-klein-9b,fake,474,0.609704641350211
+Qwen2.5-VL-3B + LoRA,openfake_external,frames-23-1-25,fake,16,0.75
+Qwen2.5-VL-3B + LoRA,openfake_external,gpt-image-1.5,fake,317,0.9716088328075709
+Qwen2.5-VL-3B + LoRA,openfake_external,gpt-image-2,fake,30,0.7666666666666667
+Qwen2.5-VL-3B + LoRA,openfake_external,halfmoon-4-4-25,fake,12,0.5833333333333334
+Qwen2.5-VL-3B + LoRA,openfake_external,ideogram-2.0,fake,16,1.0
+Qwen2.5-VL-3B + LoRA,openfake_external,illustrious,fake,326,0.9938650306748467
+Qwen2.5-VL-3B + LoRA,openfake_external,imagenet,real,1681,0.8054729327781083
+Qwen2.5-VL-3B + LoRA,openfake_external,lumina-17-2-25,fake,26,0.8846153846153846
+Qwen2.5-VL-3B + LoRA,openfake_external,midjourney-7,fake,194,0.9072164948453608
+Qwen2.5-VL-3B + LoRA,openfake_external,nano-banana-pro,fake,12,0.75
+Qwen2.5-VL-3B + LoRA,openfake_external,recraft-v2,fake,15,0.8666666666666667
+Qwen2.5-VL-3B + LoRA,openfake_external,recraft-v3,fake,45,0.8222222222222222
+Qwen2.5-VL-3B + LoRA,openfake_external,seedream-v5.0,fake,20,1.0
+Qwen2.5-VL-3B + LoRA,openfake_external,sora-2,fake,33,0.9393939393939394
+Qwen2.5-VL-3B + LoRA,openfake_external,veo-3,fake,110,0.9363636363636364
+Qwen2.5-VL-3B + LoRA,openfake_external,wan-video-2.5,fake,73,0.958904109589041
+Qwen2.5-VL-3B + LoRA,openfake_external,z-image-turbo,fake,701,0.8159771754636234
