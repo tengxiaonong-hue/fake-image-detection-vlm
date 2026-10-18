@@ -347,26 +347,25 @@ External accuracy was **11.4 percentage points below** the FakeBench Test-OOD re
 - [Dataset sampling script](src/prepare_genimage_external.py) and [HPC evaluation job](scripts/run_genimage_external.sh)
 - [Shared V2 evaluation code](src/eval_qwen3b_lora_v2.py)
 
-## Modern-Generator External Evaluation: OpenFake v2 (Pending)
+## Modern-Generator External Evaluation: OpenFake v2 (Completed)
 
-**Chosen dataset:** [ComplexDataLab/OpenFake](https://huggingface.co/datasets/ComplexDataLab/OpenFake), **`core/test` split**. This source has an explicit binary `label` field with only **`real`** and **`fake`**, and includes recent generators such as GPT Image, Nano Banana, and FLUX.2. We use a balanced, curated subset of **2,500 real + 2,500 fake images** (first distinct records encountered in streaming order). This is a **different dataset from FakeBench** and the already tested Tiny-GenImage.
+We tested the **unchanged LoRA V2 best adapter** on **5,000 OpenFake v2 `core/test` images** (2,500 Real, 2,500 Fake). No further training was performed. Images were processed with the original 224×224 V2 test settings.
 
-- **No additional model training**: test original LoRA V2 best adapter as-is, with 224px preprocessing.
-- Metrics: Accuracy, F1, MCC, confusion counts, per-generator correct rate.
-- Preparation script validates literal `real`/`fake` labels, preserves decoded image pixels as PNG, and outputs a sample manifest. It stops if fewer than 2,500 examples are available for either class. Sampling by stream order may not give equal coverage of generators; inspect `manifest.json`.
-- No OpenFake accuracy is claimed until the actual GPU test finishes.
-- The prior MLLM-Generated-Image-Detection-Dataset attempt was **not evaluated**, because its `label` describes texture/structure/hybrid rather than real/fake. Do not use `prepare_mllm2026_external.py` for binary classification; it is superseded by this workflow.
+| Test | N | Accuracy | Precision | Fake recall | F1 | MCC |
+|---|---:|---:|---:|---:|---:|---:|
+| FakeBench Test-OOD | 500 | 91.00% | 93.62% | 88.00% | 90.72% | 0.8215 |
+| Tiny-GenImage external | 1,000 | 79.60% | 85.07% | 71.80% | 77.87% | 0.5993 |
+| **OpenFake external** | **5,000** | **81.60%** | **79.92%** | **84.40%** | **82.10%** | **0.6330** |
 
-```bash
-cd ~/fakebench
-source ~/miniconda3/bin/activate && conda activate fakebench
-python src/prepare_openfake_external.py
-qsub scripts/run_openfake_external.sh
-# After evaluation:
-cat results/openfake_external/summary.csv
-```
+**OpenFake 95% accuracy CI:** 80.50%–82.65%. Confusion matrix: **TN 1,970, FP 530, FN 390, TP 2,110**. The real-image false-positive rate was 21.2%.
 
-Scripts: [prepare_openfake_external.py](src/prepare_openfake_external.py) · [run_openfake_external.sh](scripts/run_openfake_external.sh).
+**Selected fake-generator detection rates:** GPT Image 1.5 **97.16%** (n=317), GPT Image 2 **76.67%** (n=30), Nano Banana Pro **75.00%** (n=12), Seedream v5.0 **100%** (n=20), Midjourney 7 **90.72%** (n=194), FLUX.2 Klein 9B **60.97%** (n=474), and Z-Image Turbo **81.60%** (n=701). The small samples for some contemporary generators limit generalization claims. Real-image correct rates were ImageNet **80.55%** (n=1,681) and DOCCI **75.21%** (n=819). The dataset was balanced by Real/Fake, **not by generator**.
+
+**Conclusion:** Cross-dataset transfer is possible but uneven. This aggregate is a selected OpenFake subset, not the full benchmark; dataset shortcut cues and near-duplicate overlap with FakeBench are not ruled out. These scores do not establish generator-independent robustness or causal improvements over the unfine-tuned base model.
+
+- [Full analysis, methodology and limitations](reports/openfake_external.md)
+- [Summary CSV](github_results/openfake_external/summary.csv) · [All 22 source groups](github_results/openfake_external/per_generator.csv)
+- [Data preparation code](src/prepare_openfake_external.py) · [HPC evaluation job](scripts/run_openfake_external.sh)
 
 ## Key Observations
 
@@ -375,7 +374,7 @@ Scripts: [prepare_openfake_external.py](src/prepare_openfake_external.py) · [ru
 - The LoRA model reduced false negatives from 108 to 2.
 - LLaVA-OneVision-7B benefited substantially from the EtC strategy.
 - Larger parameter count did not consistently lead to better fake-image detection performance.
-- External Tiny-GenImage evaluation achieved **79.6% accuracy**, with a substantial ADM (44.4%) vs BigGAN (99.2%) detection gap. External robustness remains limited and generator-dependent.
+- External Tiny-GenImage achieved **79.6% accuracy** (ADM 44.4% vs BigGAN 99.2%) and OpenFake achieved **81.6%** across 5,000 images. OpenFake detection varied by generator (GPT Image 1.5 97.2% vs FLUX.2 Klein 9B 61.0%).
 
 ## Runtime
 
