@@ -1,0 +1,10 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+.streamlit/secrets.toml
+*.safetensors
+*.bin
+hf_cache/
+outputs/
