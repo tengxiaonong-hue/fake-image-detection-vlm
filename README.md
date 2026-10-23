@@ -19,6 +19,21 @@ The project compares multiple vision-language models under three reasoning strat
 
 The focus is not only on detection accuracy, but also on whether reasoning strategy and lightweight fine-tuning can improve performance while maintaining practical computational cost.
 
+## Interactive Streamlit Demo (Team Front End)
+
+A chat-style Streamlit UI is available in **[demo/](demo/README.md)**. The uploaded team demo supports JPEG/PNG/WebP image input, binary **Real / AI-generated** classification, two optional explanation flows (*Predict then explain* and *Analyse then predict*), chat history and a clear-chat button.
+
+**Run locally** (after installing hardware-compatible PyTorch):
+
+```bash
+python -m pip install -r demo/requirements.txt
+python -m streamlit run demo/chat_image_aligned.py
+# Optional CLI sanity check:
+python demo/run_teammate_model.py --image /path/to/sample.jpg
+```
+
+**Reproducibility and model identity:** The team-provided front end currently loads **V1 LoRA** (`NTX88666/Qwen2.5-VL-3B-FakeBench-LoRA`), not the V2 adapter used in the results reported elsewhere in this README. It also **does not use V2's 224×224 resize/crop/JPEG normalization**. The explanations are generated separately by the *unadapted base model* and are not a validated account of the classifier's internal reasoning. Consequently, V2 FakeBench and OpenFake scores must **not** be attributed to the demo. The full [demo setup and reproduction guide](demo/README.md) explains device requirements, code paths, dependencies, version capture, the two adapters, and limitations. No live inference test is asserted by this GitHub import.
+
 ## Model Scope and Design Choice
 
 This project intentionally focuses on multimodal large language models with fewer than 14 billion parameters. The selected models mainly fall within the 2.7B–8B range so that experiments remain reproducible under realistic academic computing constraints.
