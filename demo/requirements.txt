@@ -1,0 +1,8 @@
+# Minimal UI runtime. Install PyTorch separately for your CUDA/CPU/MPS environment.
+# Version bounds for compatibility; for bitwise reproducibility record pip freeze after a working run.
+streamlit>=1.50,<2
+transformers>=4.50,<5
+peft>=0.15,<1
+accelerate>=1.5,<2
+Pillow>=10,<13
+safetensors>=0.5,<1
